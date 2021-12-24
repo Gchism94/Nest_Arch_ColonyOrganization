@@ -167,7 +167,7 @@ Prop_functionWorker <- function(data.table) {
            PropWorker = ifelse(is.na(PropWorker), 0, PropWorker),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropWorker)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% # Select only the desired columns
     left_join(CornerFull)  # Joins with a data set that assigned corner presence to each nest section
 }
 
@@ -199,7 +199,7 @@ Prop_functionWorker <- function(data.table) {
            PropWorker = ifelse(is.na(PropWorker), 0, PropWorker),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropWorker)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% # Select only the desired columns
     left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
 }
 
@@ -233,7 +233,7 @@ Prop_functionBrood <- function(data.table) {
     mutate(PropBrood = ifelse(is.na(PropBrood), 0, PropBrood),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropBrood)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
     left_join(CornerFull) %>%# Joins with a data set that assigned corner presence to each nest section
     distinct()
 }
@@ -265,7 +265,7 @@ Prop_functionBrood <- function(data.table) {
     mutate(PropBrood = ifelse(is.na(PropBrood), 0, PropBrood),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropBrood)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
     left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
 }
 
@@ -299,7 +299,7 @@ Prop_functionQueen <- function(data.table) {
     mutate(PropQueen = ifelse(is.na(PropQueen), 0, PropQueen),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropQueen)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% # Select only the desired columns
     left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
 }
 
@@ -364,7 +364,7 @@ Prop_functionAlate <- function(data.table) {
     mutate(PropAlate = ifelse(is.na(PropAlate), 0, PropAlate),# NAs are produced in the join above, this makes them zeros
            Binsum = sum(PropAlate)) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(Colony, Day, Nest, Bin, PropAlate) %>% #Select only the desired columns
+    select(Colony, Day, Nest, Bin, PropAlate) %>% # Select only the desired columns
     left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
 }
 
@@ -403,7 +403,7 @@ Prop_functionWorkerSim <- function(data.table) {
            WorkerType = "RandSim",
            Density = ifelse(NestSize == "Small", "High", "Low")) %>% # Create a column that sums the proportions
     filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
-    select(RunNumber, NestSize, Nest, Bin, PropWorker, WorkerType, TimeStep, Density) %>% #Select only the desired columns
+    select(RunNumber, NestSize, Nest, Bin, PropWorker, WorkerType, TimeStep, Density) %>% # Select only the desired columns
     left_join(CornerFullSim) %>% # Joins with a data set that assigned corner presence to each nest section
     drop_na() # Remove any NAs, also a precaution only
 }
