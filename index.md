@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Nest Architecture and colony organization in ants
 
 You can use the [editor on GitHub](https://github.com/Gchism94/Nest_Arch_ColonyOrganization/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
