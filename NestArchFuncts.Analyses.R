@@ -6,8 +6,6 @@
 ## Title: Calculating colony member proportions in nest sections, importing and preparing Netlogo simulation data, all paper analyses and figures 
 ####################################################################################################################
 
-### IMPORTANT ### 
-## BEFORE RUNNING THIS CODE, PLEASE RUN ALL CODE FROM THE R SCRIPTS "Bins_Working.R", "DistanceFunctions.R", "DistToBrood.R", AND FINALLY THIS R SCRIPT 
 # This code is to replicate the analyses and figures for the following in my first chapter:
 # Density of colony members in nest sections
 # Netlogo simulation & worker comparisons
@@ -19,7 +17,7 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(extrafonts, 
+pacman::p_load(tidyverse, 
                forcats,
                ggpubr,
                Kendall,
@@ -39,12 +37,6 @@ pacman::p_load(extrafonts,
                readxl,
                scales,
                viridis)
-
-# Importing fonts for plots
-font_import()
-
-# Yes, import all fonts (takes a few minutes)
-y
 
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
@@ -669,7 +661,7 @@ annotate_figure(WorkerPropPlotAnnotFull,
                                           size = 18, rot = 90, family = "Arial"),
                          right = NULL)
 
-# Linear regression: observed & simulated workers
+# LINEAR REGRESSION: observed & simulated workers
 # RESPONSE VARIABLE
 # PropWorker - Proportion of either empirical or Netlogo simulated workers 
 # EFFECTS
@@ -2125,7 +2117,7 @@ FidZoneAreaPlot <- ggarrange(FidZoneArea.1, FidZoneArea.2,
                          ncol = 2, nrow = 1,
                          common.legend = FALSE)
 
-#Annotating the compiled plots to include a common y-axis
+# Annotating the compiled plots to include a common y-axis
 FidZoneAreaPlotFull <- annotate_figure(FidZoneAreaPlot,
                                    top = NULL,
                                    bottom = NULL,
