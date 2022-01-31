@@ -17,7 +17,7 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(extrafonts, 
+pacman::p_load(extrafont, 
                forcats,
                ggpubr,
                Kendall,
