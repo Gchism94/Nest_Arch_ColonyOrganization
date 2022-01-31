@@ -6,6 +6,8 @@
 ## Title: Calculating colony member proportions in nest sections, importing and preparing Netlogo simulation data, all paper analyses and figures 
 ####################################################################################################################
 
+### IMPORTANT ### 
+## BEFORE RUNNING THIS CODE, PLEASE RUN ALL CODE FROM THE R SCRIPTS "Bins_Working.R", "DistanceFunctions.R", "DistToBrood.R", AND FINALLY THIS R SCRIPT 
 # This code is to replicate the analyses and figures for the following in my first chapter:
 # Density of colony members in nest sections
 # Netlogo simulation & worker comparisons
