@@ -19,7 +19,7 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(tidyverse, 
+pacman::p_load(extrafonts, 
                forcats,
                ggpubr,
                Kendall,
@@ -39,6 +39,12 @@ pacman::p_load(tidyverse,
                readxl,
                scales,
                viridis)
+
+# Importing fonts for plots
+font_import()
+
+# Yes, import all fonts (takes a few minutes)
+y
 
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
