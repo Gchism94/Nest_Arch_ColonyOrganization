@@ -2,20 +2,17 @@
 ## Author: GREG CHISM
 ## Date: Dec 2021
 ## email: gchism@email.arizona.edu
-## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from random movement and is affected by nest space
+## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Calculating colony member proportions in nest sections, importing and preparing Netlogo simulation data, all paper analyses and figures 
 ####################################################################################################################
+
+# This code is to replicate all analyses and figures for the "Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space"
 
 # READ ME: 
 # YOU MUST RUN THE FOLLOWING R SCRIPTS IN ORDER
 # (1) Bins_Working.R - Binning empirical and Netlogo simulation data and then calculating the proportions of each in the binned sections
 # (2) DistanceFunctions.R - Distance to the nest entrance for all data, mobile colony member distance to the brood center, worker distance to all nest sections but their own
-
-# This code is to replicate the analyses and figures for the following in the manuscript:
-# "Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from random movement and is affected by nest space"
-# Density of colony members in nest sections
-# Netlogo simulation & worker comparisons
-# Density figures
+# (3) SFZFunctions.R - Paint-marked worker site fidelity zones
 
 install.packages("pacman") # Download package with function to load multiple packaged at once
 ####################################################################################################################

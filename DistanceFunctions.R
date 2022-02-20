@@ -2,7 +2,7 @@
 ## Author: GREG CHISM
 ## Date: FEB 2022
 ## email: gchism@email.arizona.edu
-## Project: Nest shape influences colony organization in ants
+## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Distance functions 
 ####################################################################################################################
 
