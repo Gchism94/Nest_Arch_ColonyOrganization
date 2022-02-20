@@ -1,18 +1,16 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: Dec 2021
+## Date: Feb 2022
 ## email: gchism@email.arizona.edu
-## Project: Nest shape influences colony organization in ants
-## Title: Nest section bin functions 
+## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from random movement and is affected by nest space
+## Title: Nest section bin functions & nest density calculations
 ####################################################################################################################
 
-# BIN ASSIGNMENT FUNCTION
-# The code below bins x and y coordinate colony data into eight even area nest sections
-# The code for Netlogo simulated x and y coordinate results is separate and below
-# To do this, a reference data set of bin coordinates is used and coordinates are run through a series of conditional statements
-# Where each conditional statement checks whether the coordinate is in one of eight bins sequentially
-
-# The code is set up such that you can run each colony sequentially, which was done to avoid errors in loops that can result in losing an entire set of data 
+# BIN ASSIGNMENT FUNCTION & NEST SECTION PROPORTIONS
+# This code does the following:  
+# (1) Processes empirical and netlogo data for nest section binning (eight even area bins) 
+# (2) Bins the data into the eight even area nest sections
+# (3) Calculates the proportions of individuals in each nest sections
 
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
@@ -44,11 +42,31 @@ FullDataCoordQueenRD2 <- read.csv("FullDataCoordQueenRD2.csv")
 # Low nest density
 FullDataCoordAlates <- read.csv("FullDataCoordAlates.csv")
 
+# NETLOGO 
+ArchitectureMoveModelFull <- read.csv("ArchitectureMoveModelFull.csv")
+
+# NULL BINS REFERENCE (EMPIRICAL)
+BinsNullFull <- read.csv("BinsNullFull.csv")
+
+# NULL BINS REFERENCE (NETLOGO SIMULATIONS)
+BinsNullNetlogo <- read.csv("BinsNullNetlogo.csv")
+
 # BIN REFERENCE COORDINATES (EMPIRICAL)
 BinCoordFull <- read.csv("BinCoordFull.csv")
 
 # BIN REFERENCE COORDINATES (NETLOGO SIMULATIONS)
 BinCoordNetlogo <- read.csv("BinCoordNetlogo.csv")
+
+# REFERENCE COORDINATES FOR CORNERS (EMPIRICAL)
+CornerFull <- read.csv("CornerFull.csv")
+
+# REFERENCE COORDINATES FOR CORNERS (NETLOGO SIMULATIONS)
+CornerFullSim <- read.csv("CornerFullSim.csv")
+
+####################################################################################################################
+# EMPIRICAL DATA PROCESSING 
+# This code processes empirical data for binning 
+####################################################################################################################
 
 # Joining all databases, to be subset later into individual colony members
 # WORKERS
@@ -86,6 +104,63 @@ FullDataCoordAlatesRatio <- left_join(FullDataCoordAlates, FullDataCoordAlatesMa
 FullDataCoordAll <- full_join(FullDataCoordWorkersRD1_RD2, FullDataCoordBroodRD1_RD2) %>%
   full_join(FullDataCoordQueenRD1_RD2) %>%
   full_join(FullDataCoordAlates)
+
+####################################################################################################################
+# NETLOGO DATA PROCESSING
+# This code processes the netlogo random-walk simulated data set
+####################################################################################################################
+
+# Removing brackets from xcor and ycor list 
+ArchitectureMoveModelFullCorrect <- ArchitectureMoveModelFull_GC_30_Sept_2021_TestExp_Table %>%
+  mutate(xcor = gsub("\\[|\\]", "", xcor),
+         ycor = gsub("\\[|\\]", "", ycor))
+
+# Keep desired columns
+ArchitectureMoveModelFullCorrectRed <- ArchitectureMoveModelFullCorrect %>%
+  select(c(RunNumber, NestSize, Nest, MovementRule, TimeStep))
+
+# Keeping only X and Y coordinates
+# X coordinate
+ArchitectureMoveModelFullCorrectRedXcor <- ArchitectureMoveModelFullCorrect %>%
+  select(-c(ycor))
+
+# Y coordinate
+ArchitectureMoveModelFullCorrectRedYcor <- ArchitectureMoveModelFullCorrect %>%
+  select(-c(xcor))
+
+# Splitting the xcor and ycor lists
+XCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedXcor$xcor, split = " ") #xcor
+YCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedYcor$ycor, split = " ") #ycor
+
+# Create a column that assigns unique IDs to each xcor and ycor row within each simulation run
+# X coordinate
+NetlogoTestX <- data.frame(RunNumber = rep(ArchitectureMoveModelFullCorrectRedXcor$RunNumber, sapply(XCoordCorrect, length)), xcor = unlist(XCoordCorrect)) %>%
+  rowid_to_column(var = "id")
+
+# Y coordinate
+NetlogoTestY <- data.frame(RunNumber = rep(ArchitectureMoveModelFullCorrectRedYcor$RunNumber, sapply(YCoordCorrect, length)), ycor = unlist(YCoordCorrect)) %>%
+  rowid_to_column(var = "id")
+
+# Creating the working Netlogo data sets
+NetlogoTestFull <- left_join(NetlogoTestX, NetlogoTestY) %>%
+  mutate(xcor = as.numeric(xcor),
+         ycor = as.numeric(ycor)) %>%
+  select(-c(id)) %>%
+  left_join(ArchitectureMoveModelFullCorrectRed) %>%
+  mutate(MovementRule = "Random",
+         xcor = xcor * 0.1,
+         ycor = ycor * 0.1) %>% 
+  rename(ScaledX = xcor, ScaledY = ycor)
+
+####################################################################################################################
+# EMPIRICAL DATA BINNING FUNCTION
+# The code below bins x and y coordinate colony data into eight even area nest sections
+# The code for Netlogo simulated x and y coordinate results is separate and below
+# To do this, a reference data set of bin coordinates is used and coordinates are run through a series of conditional statements
+# Where each conditional statement checks whether the coordinate is in one of eight bins sequentially
+
+# The code is set up such that you can run each colony sequentially, which was done to avoid errors in loops that can result in losing an entire set of data 
+####################################################################################################################
 
 # COLONY 1
 CoordBinned <- function(data_table){
@@ -1857,7 +1932,7 @@ Colony1Binned %>%
   filter(Bin == "0") %>%
   group_by(Bin) %>%
   summarise(n = n())
-FullDataCoordWorkers
+
 # Combine all data sets into the final one for workers, colonies 1-10
 # This is because functions in other scripts keep colonies 1-10 (high nest density) and 11-20 (low nest density) separate
 FullDataCoordWorkers <- Colony1Binned %>%
@@ -1968,12 +2043,14 @@ FullDataCoordAlates <- Colony11Binned %>%
   filter(Bin != 0 & ColonyMember == "Alates" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Sex, SexNumber, TotalNumber)
 
+####################################################################################################################
 # NETLOGO SIMULATION RESULTS BIN FUNCTION
 # The below code is the same as for the experimental coordinates
 # There is also a bin coordinate reference data set used here 
 # Except for a renaming line that changes "x" and "y" columns to "ScaledX" and "ScaledY" in order to work with the function
 # This also makes later joining real data and simulated results easier 
 # There is a separate set of code for each combination of nest shape (Tube, Circle) and size (Small, Large)
+####################################################################################################################
 
 CoordBinnedNetlogo <- function(data_table){
   # Separating out the high nest density simulations
@@ -2129,3 +2206,282 @@ CoordBinnedNetlogo <- function(data_table){
 
 # Run the eight nest section binning function for the Netlogo simulation data set
 CoordBinnedNetlogo(NetlogoTestFull) #NetlogoDataset
+
+####################################################################################################################
+# NEST SECTION DENSITY CALCULATIONS
+# The following scripts calculate the proportion of colony members in each nest section (Column Bin: 1-8), calculated in the file Bins_Working.R 
+# The script uses a null data set that's just Colony, Nest, and Bin called BinsNullFull, which just shows bin 1-8 for each Colony and nest combination
+# The following also uses a reference data set CornerFull, which assignes the presence of corners (Y/N) to nest sections
+####################################################################################################################
+
+# First we create the proportions data set, then a null one 
+# This approach allows zeros to be present in the proportions data sets, since no workers in the nest section is relevant data
+
+# WORKERS
+# High density treatment
+Prop_functionWorker <- function(data.table) {
+  AntProp <- data.table %>% # Creating the data set of worker proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of workers in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each worker in each bin in each observation
+           PropWorker = (BinCount / count)) %>% # Calculate the proportion of workers in each bin 
+    select(Colony, Day, Nest, Bin, PropWorker, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null worker proportions in each nest section
+  AntPropNull <- AntProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(AntPropNull, BinsNullFull) %>% # Join the two null data sets
+    drop_na()
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullWorkers <<- full_join(NestArchNullBins, AntProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(WorkerType = "Obsv", # Create a column filled with "Obsv" which identifies this data as the real one vs. the Netlogo simunlations 
+           PropWorker = ifelse(is.na(PropWorker), 0, PropWorker),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropWorker)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% # Select only the desired columns
+    left_join(CornerFull)  # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the proportions of workers in nest sections function for the FullDataCoordWorkers data set 
+Prop_functionWorker(FullDataCoordWorkers)
+
+# WORKERS
+# Low density treatment
+Prop_functionWorker <- function(data.table) {
+  AntProp <- data.table %>% # Creating the data set of worker proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of workers in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each worker in each bin in each observation
+           PropWorker = (BinCount / count)) %>% # Calculate the proportion of workers in each bin 
+    select(Colony, Day, Nest, Bin, PropWorker, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null worker proportions in each nest section
+  AntPropNull <- AntProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(AntPropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullWorkersRD2 <<- full_join(NestArchNullBins, AntProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(WorkerType = "Obsv", # Create a column filled with "Obsv" which identifies this data as the real one vs. the Netlogo simunlations 
+           PropWorker = ifelse(is.na(PropWorker), 0, PropWorker),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropWorker)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropWorker, Density, WorkerType) %>% # Select only the desired columns
+    left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the proportions of workers in nest sections function for the FullDataCoordWorkersRD2 data set 
+Prop_functionWorker(FullDataCoordWorkersRD2)
+
+#Join worker proportions in nest sections data sets
+AntPropFullWorkersRD1_RD2 <- full_join(AntPropFullWorkers, AntPropFullWorkersRD2)
+
+# BROOD
+# High density treatment
+Prop_functionBrood <- function(data.table) {
+  BroodProp <- data.table %>% # Creating the data set of brood proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of brood in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each brood in each bin in each observation
+           PropBrood = (BinCount / count)) %>% # Calculate the proportion of brood in each bin 
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null brood proportions in each nest section
+  BroodPropNull <- BroodProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(BroodPropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullBrood <<- full_join(NestArchNullBins, BroodProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropBrood = ifelse(is.na(PropBrood), 0, PropBrood),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropBrood)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
+    left_join(CornerFull) %>%# Joins with a data set that assigned corner presence to each nest section
+    distinct()
+}
+
+# Run the proportions of brood in nest sections function for the FullDataCoordBrood data set 
+Prop_functionBrood(FullDataCoordBrood)
+
+# BROOD
+# Low density treatment
+Prop_functionBrood <- function(data.table) {
+  BroodProp <- data.table %>% # Creating the data set of brood proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of brood in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each brood in each bin in each observation
+           PropBrood = (BinCount / count)) %>% # Calculate the proportion of brood in each bin 
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null brood proportions in each nest section
+  BroodPropNull <- BroodProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(BroodPropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullBroodRD2 <<- full_join(NestArchNullBins, BroodProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropBrood = ifelse(is.na(PropBrood), 0, PropBrood),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropBrood)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropBrood, Density) %>% # Select only the desired columns
+    left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the proportions of brood in nest sections function for the FullDataCoordBroodRD2 data set 
+Prop_functionBrood(FullDataCoordBroodRD2)
+
+# Join brood proportions in nest sections data sets
+AntPropFullBroodRD1_RD2 <- full_join(AntPropFullBrood, AntPropFullBroodRD2) 
+
+# QUEENS
+# High density treatment
+Prop_functionQueen <- function(data.table) {
+  QueenProp <- data.table %>% # Creating the data set of queen proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of queen in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each queen in each bin in each observation
+           PropQueen = (BinCount / count)) %>% # Calculate the proportion of queen in each bin 
+    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null queen proportions in each nest section
+  QueenPropNull <- QueenProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(QueenPropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullQueen <<- full_join(NestArchNullBins, QueenProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropQueen = ifelse(is.na(PropQueen), 0, PropQueen),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropQueen)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% # Select only the desired columns
+    left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the proportions of queens in nest sections function for the FullDataCoordQueen data set 
+Prop_functionQueen(FullDataCoordQueen)
+
+# QUEENS
+# Low density treatment
+Prop_functionQueen <- function(data.table) {
+  QueenProp <- data.table %>% # Creating the data set of queen proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of queen in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each queen in each bin in each observation
+           PropQueen = (BinCount / count)) %>% # Calculate the proportion of queen in each bin 
+    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null queen proportions in each nest section
+  QueenPropNull <- QueenProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(QueenPropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullQueenRD2 <<- full_join(NestArchNullBins, QueenProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropQueen = ifelse(is.na(PropQueen), 0, PropQueen),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropQueen)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropQueen, Density) %>% #Select only the desired columns
+    left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the proportions of queens in nest sections function for the FullDataCoordQueenRD2 data set 
+Prop_functionQueen(FullDataCoordQueenRD2)
+
+# Join queen proportions in nest sections data sets
+AntPropFullQueenRD1_RD2 <- full_join(AntPropFullQueen, AntPropFullQueenRD2)
+
+# ALATES
+# Only the high density treatment
+Prop_functionAlate <- function(data.table) {
+  AlateProp <- data.table %>% # Creating the data set of alate proportions in each nest section
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, Day
+    mutate(count = n()) %>% # Count total number of alates in each observation
+    group_by(Colony, Nest, Day, Bin) %>% # Group by columns Colony, Nest, Day, Bin
+    mutate(BinCount = n(), # Counting the number of each alate in each bin in each observation
+           PropAlate = (BinCount / count)) %>% # Calculate the proportion of alates in each bin 
+    select(Colony, Day, Nest, Bin, PropAlate) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null alate proportions in each nest section
+  AlatePropNull <- AlateProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(Colony, Nest, Day)) %>% # Select the desired columns
+    drop_na() %>% # Remove any NAs
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(AlatePropNull, BinsNullFull) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullAlateRD2 <<- full_join(NestArchNullBins, AlateProp) %>%  
+    group_by(Colony, Nest, Day) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropAlate = ifelse(is.na(PropAlate), 0, PropAlate),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropAlate)) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(Colony, Day, Nest, Bin, PropAlate) %>% # Select only the desired columns
+    left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
+}
+
+# Run the Prop_functionAlate function for the FullDataCoordAlates data set 
+Prop_functionAlate(FullDataCoordAlates)
+
+####################################################################################################################
+# NETLOGO SIMULATION: NEST SECTION DENSITY CALCULATIONS
+# The following scripts calculate the proportion of Netlogo simulated agents (NetlogoBinnedFull) in each nest section (Column Bin: 1-8), calculated in the file Bins_Working.R 
+# The script uses a null data set that's just Colony, Nest, and Bin called BinsNullNetlogo, which just shows bin 1-8 for each Colony and nest combination
+# The following also uses a reference data set CornerFull, which assignes the presence of corners (Y/N) to nest sections
+####################################################################################################################
+
+# NETLOGO SIMULATIONS
+# All data at once, not split into density treatments
+Prop_functionWorkerSim <- function(data.table) {
+  NetlogoProp <- data.table %>% # Creating the data set of simulates result proportions in each nest section
+    group_by(RunNumber, Nest, NestSize) %>% # Group by columns RunNumber, Nest, NestSize
+    mutate(count = n()) %>% # Count total number of simulates result in each observation
+    group_by(RunNumber, Nest, NestSize, Bin) %>% # Group by columns RunNumber, Nest, NestSize, Bin
+    mutate(BinCount = n(), # Counting the number of each simulates result in each bin in each observation
+           PropWorker = (BinCount / count)) %>% # Calculate the proportion of simulated results in each bin 
+    select(NestSize, Nest, Bin, RunNumber, PropWorker, TimeStep) %>% # Select only the desired columns
+    distinct() # Remove duplicate rows
+  # Creating the data set of null simulates result proportions in each nest section
+  NetlogoPropNull <- NetlogoProp %>%  
+    ungroup() %>% # Ungroup the data set
+    select(c(RunNumber, Nest, NestSize)) %>% # Select the desired columns
+    distinct() # Remove duplicate rows
+  NestArchNullBins <- full_join(NetlogoPropNull, BinsNullNetlogo) # Join the two null data sets
+  # Joining the working data set to the null one, which keeps the zeros in the final data set
+  AntPropFullSim <<- full_join(NestArchNullBins, NetlogoProp) %>%  
+    group_by(RunNumber, Nest, NestSize) %>% # Group by columns Colony, Nest, and Day
+    mutate(PropWorker = ifelse(is.na(PropWorker), 0, PropWorker),# NAs are produced in the join above, this makes them zeros
+           Binsum = sum(PropWorker),
+           WorkerType = "RandSim",
+           Density = ifelse(NestSize == "Small", "High", "Low")) %>% # Create a column that sums the proportions
+    filter(Binsum != 0) %>% # Removes any rows with zeros from the Binsum column. This is only a precaution 
+    select(RunNumber, NestSize, Nest, Bin, PropWorker, WorkerType, TimeStep, Density) %>% # Select only the desired columns
+    left_join(CornerFullSim) %>% # Joins with a data set that assigned corner presence to each nest section
+    drop_na() # Remove any NAs, also a precaution only
+}
+
+# Run the Prop_functionWorkerSim function for the NetlogoBinnedFull data set 
+Prop_functionWorkerSim(NetlogoBinnedFull)
