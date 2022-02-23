@@ -53,16 +53,16 @@ pacman::p_load(tidyverse,
 # High nest density
 WorkerSim1PropAnalysisSmall <- AntPropFullSim %>% filter(NestSize == "Small")
 # Tube nest shape
-WorkerSim1TubePropAnalysis <- WorkerSim1PropAnalysisSmall%>%filter(Nest=="Tube")
+WorkerSim1TubePropAnalysis <- WorkerSim1PropAnalysisSmall %>% ilter(Nest == "Tube")
 # Circle nest shape
-WorkerSim1CirclePropAnalysis<-WorkerSim1PropAnalysisSmall%>%filter(Nest=="Circle")
+WorkerSim1CirclePropAnalysis <- WorkerSim1PropAnalysisSmall %>% filter(Nest == "Circle")
 
 # Low nest density
 WorkerSim2PropAnalysisLarge <- AntPropFullSim %>% filter(NestSize == "Large")
 # Tube nest shape
-WorkerSim2TubePropAnalysisRD2<-WorkerSim2PropAnalysisLarge%>%filter(Nest=="Tube")
+WorkerSim2TubePropAnalysisRD2 <- WorkerSim2PropAnalysisLarge %>% filter(Nest == "Tube")
 # Circle nest shape
-WorkerSim2CirclePropAnalysisRD2<-WorkerSim2PropAnalysisLarge%>%filter(Nest=="Circle")
+WorkerSim2CirclePropAnalysisRD2 <- WorkerSim2PropAnalysisLarge %>% filter(Nest == "Circle")
 
 # EMPIRICAL WORKERS (already separated into high and low nest densities - RD2 are low density)
 # High nest density
@@ -77,30 +77,86 @@ WorkerTubePropAnalysisRD2 <- AntPropFullWorkersRD2 %>% filter(Nest == "Tube")
 # Circle nest shape
 WorkerCirclePropAnalysisRD2 <- AntPropFullWorkersRD2 %>% filter(Nest == "Circle")
 
-# SIMULATION & EXPERIMENTAL DISTRIBUTION COMPARISIONS - CRAMER VON MISES TESTS
+# SIMULATION & EXPERIMENTAL DISTRIBUTION COMPARISIONS - CRAMER VON MISES TESTS WITH BENJAMINI-HOCHBERG FDR POST-HOC P-VALUE CORRECTIONS
 # High density tube nest comparison
-cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)
+cvm_EmpTube1.SimTube1 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube1.SimTube1") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # Low density tube nest comparison
-cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)
+cvm_EmpTube2.SimTube2 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube2.SimTube2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # High density circle nest comparison
-cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)
+cvm_EmpCircle1.SimCircle1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle1.SimCircle1") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # Low density circle nest comparison
-cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)
+cvm_EmpCircle2.SimCircle2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle2.SimCircle2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # High density tube nest empirical workers v. low density tube nest simulations
-cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)
+cvmEmpTube1.SimTube2 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube1.SimTube2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # Low density tube nest empirical workers v. high density tube nest simulations
-cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)
+cvmEmpTube2.SimTube1 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube2.SimTube1") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # High density circle nest empirical workers v. low density circle nest simulations
-cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)
+cvmEmpCircle1.SimCircle2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle1.SimCircle2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # Low density circle nest empirical workers v. high density circle nest simulations
-cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)
+cvmEmpCircle2.SimCircle1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle2.SimCircle1") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
 
 # COMPARING SIMULATIONS
 # High density vs low density tube nest
-# Note that because this statistic is calculated through bootstrap resamplings there is a slightlu different p-value each time, but it is always > 0.95
-cvm_test(WorkerSim1TubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)
+# Note that because this statistic is calculated through bootstrap resamplings there is a slightly different p-value each time, but it is always > 0.95
+cvmSimTube1.SimTube2 <- as.data.frame(cvm_test(WorkerSim1TubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "SimTube1.SimTube2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
 # High density vs low density circle nest
-cvm_test(WorkerSim1CirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)
+cvmSimCircle1.SimCircle2 <- as.data.frame(cvm_test(WorkerSim1CirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "SimCircle1.SimCircle2") %>%
+  rename("P-Value" = 1) %>%
+  remove_rownames()
+
+# Full set of cvm p-values
+FullcvmDists <- full_join(cvm_EmpTube1.SimTube1, cvm_EmpTube2.SimTube2) %>%
+  full_join(cvm_EmpCircle1.SimCircle1) %>% 
+  full_join(cvm_EmpCircle2.SimCircle2) %>% 
+  full_join(cvmEmpTube1.SimTube2) %>% 
+  full_join(cvmEmpTube2.SimTube1) %>% 
+  full_join(cvmEmpCircle1.SimCircle2) %>% 
+  full_join(cvmEmpCircle2.SimCircle1) %>% 
+  full_join(cvmSimTube1.SimTube2) %>% 
+  full_join(cvmSimCircle1.SimCircle2)
+
+# Benjamini-Hochberg method for correcting False Discovery Rates in multiple comparison testing p-values
+BH.P.adjust <- as.data.frame(p.adjust(FullcvmDists$`P-Value`, method = "BH")) %>%
+  rename(BH.P.adjust = 1)
+
+# Final adjusted p-values for multiple cvm comparisons 
+FullcvmDists.adj <- cbind(FullcvmDists, BH.P.adjust)
 
 # DETERMINING MAX WORKER AND NETLOGO SIMULATION PROPORTIONS IN NEST SECTIONS
 # WORKERS 
