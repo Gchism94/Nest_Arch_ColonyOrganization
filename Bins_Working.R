@@ -12,6 +12,33 @@
 # (2) Bins the data into the eight even area nest sections
 # (3) Calculates the proportions of individuals in each nest sections
 
+install.packages("pacman") # Download package with function to load multiple packaged at once
+####################################################################################################################
+# Loading required packages for code below  
+# p_load() will download packages that aren't in system library
+####################################################################################################################
+
+pacman::p_load(tidyverse, 
+               forcats,
+               ggpubr,
+               Kendall,
+               kuiper.2samp,
+               lme4,
+               lmerTest,
+               magick,
+               magrittr,
+               MuMIn,
+               RColorBrewer,
+               tidyverse,
+               wesanderson,
+               assertthat,
+               twosamples,
+               RColorBrewer,
+               ggpointdensity,
+               readxl,
+               scales,
+               viridis)
+
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
 # This code imports all necessary data sets for the script below
@@ -40,7 +67,7 @@ FullDataCoordQueenRD2 <- read.csv("FullDataCoordQueenRD2.csv")
 
 # ALATES
 # Low nest density
-FullDataCoordAlates <- read.csv("FullDataCoordAlates.csv")
+FullDataCoordAlate <- read.csv("FullDataCoordAlate.csv")
 
 # NETLOGO 
 ArchitectureMoveModelFull <- read.csv("ArchitectureMoveModelFull.csv")
