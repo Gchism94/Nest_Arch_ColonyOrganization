@@ -108,7 +108,9 @@ FullDataCoordQueenRD1_RD2 <- full_join(FullDataCoordQueen, FullDataCoordQueenRD2
 
 # ALATES
 FullDataCoordAlates <- FullDataCoordAlate %>%
-  mutate(ColonyMember = "Alates")
+  mutate(ColonyMember = "Alates") %>%
+  separate(SexID, c("Alate", "Sex", "SexNumber", "TotalNumber"), sep = ",", remove = TRUE) %>%
+  select(-c(Alate))
 
 # Alate sex ratios
 # Note, these ratios incluse "?", where the sex of the alate was uncertain.
