@@ -1,6 +1,6 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: Feb 2022
+## Date: MAR 2022
 ## email: gchism@email.arizona.edu
 ## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Nest section bin functions & nest density calculations
@@ -18,8 +18,9 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(tidyverse, 
+pacman::p_load(assertthat,
                forcats,
+               ggpointdensity,
                ggpubr,
                Kendall,
                kuiper.2samp,
@@ -29,15 +30,12 @@ pacman::p_load(tidyverse,
                magrittr,
                MuMIn,
                RColorBrewer,
-               tidyverse,
-               wesanderson,
-               assertthat,
-               twosamples,
-               RColorBrewer,
-               ggpointdensity,
                readxl,
                scales,
-               viridis)
+               tidyverse,
+               twosamples,
+               viridis,
+               wesanderson)
 
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
