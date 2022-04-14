@@ -2400,7 +2400,7 @@ Prop_functionQueen <- function(data.table) {
   # Creating the data set of null queen proportions in each nest section
   QueenPropNull <- QueenProp %>%  
     ungroup() %>% # Ungroup the data set
-    select(c(Colony, Nest, Day)) %>% # Select the desired columns
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
     drop_na() %>% # Remove any NAs
     distinct() # Remove duplicate rows
   NestArchNullBins <- full_join(QueenPropNull, BinsNullFull) # Join the two null data sets
@@ -2413,7 +2413,6 @@ Prop_functionQueen <- function(data.table) {
     select(Colony, Day, Nest, Bin, PropQueen, Density) %>% # Select only the desired columns
     left_join(CornerFull) # Joins with a data set that assigned corner presence to each nest section
 }
-
 # Run the proportions of queens in nest sections function for the FullDataCoordQueen data set 
 Prop_functionQueen(FullDataCoordQueen)
 
@@ -2431,7 +2430,7 @@ Prop_functionQueen <- function(data.table) {
   # Creating the data set of null queen proportions in each nest section
   QueenPropNull <- QueenProp %>%  
     ungroup() %>% # Ungroup the data set
-    select(c(Colony, Nest, Day)) %>% # Select the desired columns
+    select(c(Colony, Nest, Day, Density)) %>% # Select the desired columns
     drop_na() %>% # Remove any NAs
     distinct() # Remove duplicate rows
   NestArchNullBins <- full_join(QueenPropNull, BinsNullFull) # Join the two null data sets
