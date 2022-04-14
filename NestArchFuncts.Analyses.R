@@ -873,7 +873,8 @@ WorkerDistPlotFull <- annotate_figure(WorkerDistPlot,
                 top = text_grob("Workers", color = "black",
                                 size = 18, x = 0.055, y = -0.6),
                 bottom = NULL,
-                left =  NULL,
+                left =  text_grob("Obsv worker count", color = "black",
+                                  size = 18, rot = 90),
                 right = NULL
 )
 
@@ -937,7 +938,8 @@ WorkerSimPlotFull <- annotate_figure(WorkerSimPlot,
                 top = text_grob("Random walk", color = "black",
                                 size = 18, x = 0.089, y = -1),
                 bottom = NULL,
-                left =  NULL,
+                left =  text_grob("Sim worker count", color = "black",
+                                  size = 18, rot = 90),
                 right = NULL
 )
 
@@ -950,9 +952,8 @@ FullDistPlot <- ggarrange(WorkerDistPlotFull, WorkerSimPlotFull,
 annotate_figure(FullDistPlot,
                 top = NULL,
                 bottom = text_grob("Scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525),
-                left = text_grob("Obsv / sim worker count", color = "black",
-                                 size = 18,  rot = 90),
+                                   size = 18),
+                left = NULL,
                 right = NULL
 )
 
@@ -970,6 +971,7 @@ AllDistScaledRD1_RD2 <- SimDistScaled %>%
 # Corner - Presence of a corner in the nest section (Y / N)
 summary(lm(ScaledDist ~ Nest * WorkerType + Density + Corner, AllDistScaledRD1_RD2))
 
+
 # LINEAR MIXED EFFECTS MODEL: Empirical worker distances from the nest entrance
 # RESPONSE VARIABLE
 # ScaledDist - Worker scaled distances from the nest entrance (0 - 1, where 1 is the longest, shortest distance from the nest entrance)
@@ -982,7 +984,7 @@ summary(lm(ScaledDist ~ Nest * WorkerType + Density + Corner, AllDistScaledRD1_R
 # (1|Colony) - Colony identification 
 summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = WorkerDistScaledRD1_RD2))
 
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = WorkerDistScaledRD1_RD2))
 
 # BROOD SCALED DISTANCES FROM THE NEST ENTRANCE
@@ -1002,7 +1004,7 @@ BroodDist1 <- ggplot(BroodDistScaled %>% arrange(Nest),
   theme(axis.ticks = element_blank(),
         axis.text = element_text(size = 18,color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
@@ -1027,7 +1029,7 @@ BroodDist2 <- ggplot(BroodDistScaledRD2 %>% arrange(Nest),
         axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1.05, 0.685),
@@ -1072,7 +1074,7 @@ BroodFullDist <- annotate_figure(BroodDistPlot,
 # (1|Colony) - Colony identification 
 summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodDistScaledRD1_RD2))
 
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodDistScaledRD1_RD2))
 
 # QUEEN SCALED DISTANCES FROM THE NEST ENTRANCE
@@ -1091,7 +1093,7 @@ QueenDist1 <- ggplot(QueenDistScaled %>% arrange(Nest),
   theme(axis.ticks = element_blank(),
         axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1113,7 +1115,7 @@ QueenDist2 <- ggplot(QueenDistScaledRD2 %>% arrange(Nest),
   theme(axis.ticks = element_blank(),
         axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1164,7 +1166,7 @@ annotate_figure(BroodQueenDist,
 # (1|Colony) - Colony identification 
 summary(lmer(ScaledDist ~ Nest * Density + Corner + Day + (1 | Colony), data = QueenDistScaledRD1_RD2))
 
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = QueenDistScaledRD1_RD2))
 
 # ALATE SCALED DISTANCES TO THE NEST ENTRANCE
@@ -1194,8 +1196,7 @@ AlateDist1 <- ggplot(AlateDistScaledRD2Plot %>% arrange(Nest),
   guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
-                    values = c("red", "blue")) +
-  ylim(0, 110)
+                    values = c("red", "blue")) 
 
 # BOXPLOT SHOWING THE RELATIONSHIP BETWEEN ALATE SEX AND SCALED DISTANCE TO THE NEST ENTRANCE 
 AlateDist2 <- ggplot(AlateDistScaledRD2Plot %>% arrange(Nest),
@@ -1572,7 +1573,7 @@ annotate_figure(WorkerQueenBroodDist,
 # (1|Colony) - Colony identification 
 summary(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistQueensRD1_RD2))
 
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistQueensRD1_RD2))
 
 # ALATE SCALED DISTANCE TO THE BROOD CENTER
@@ -1829,7 +1830,7 @@ annotate_figure(FidOccurPlot,
 # (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
 summary(lmer(SFZ ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
   
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(SFZ ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
 
 # LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
@@ -1843,7 +1844,7 @@ r.squaredGLMM(lmer(SFZ ~ Nest * Density + Colony + (1 | ColorID), data = WorkerD
 # (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
 summary(lmer(Occur ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
 
-#Marginal and conditional R-squared, showing the influence of the random effect on the model
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(Occur ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # Function to create large points in a geom_point legend
@@ -1882,7 +1883,7 @@ SFZDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Densit
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   xlim(0, 1) +
-  ylim(0, 0.3)
+  ylim(0, 0.4)
 
 # Low density treatment
 SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -1914,7 +1915,7 @@ SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Densit
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 1) +
-  ylim(0, 0.3)
+  ylim(0, 0.4)
 
 # Compiling worker fidelity zone size v. worker scaled distance to the nest entrance plots
 SFZDistPlot <- ggarrange(SFZDist1, SFZDist2,
@@ -2069,11 +2070,7 @@ SFZBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
         axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
         plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
-        legend.key = element_blank(),
-        legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 18, color = "black"),
-        legend.key.size = unit(1, 'cm')) +
+        legend.position = "none") +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
@@ -2081,7 +2078,7 @@ SFZBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 0.75) +
-  ylim(0, 0.3)
+  ylim(0, 0.4)
 
 # Low density treatment
 SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2100,7 +2097,9 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
         axis.title = element_blank(),
         plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
-        legend.justification = c(1, 1),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
         legend.text = element_text(size = 18, color = "black"),
         legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
@@ -2111,7 +2110,7 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 0.75) +
-  ylim(0, 0.3)
+  ylim(0, 0.4)
 
 # Compiling worker fidelity zone size v. worker scaled distance to the brood center plots and include a common legend
 SFZBroodDistPlot <- ggarrange(SFZBroodDist1, SFZBroodDist2,
@@ -2119,7 +2118,7 @@ SFZBroodDistPlot <- ggarrange(SFZBroodDist1, SFZBroodDist2,
                               label.x = 0.9,
                               font.label = list(size = 18, face = "plain"),
                               ncol = 2, nrow = 1,
-                              common.legend = TRUE)
+                              common.legend = FALSE)
 
 # Annotating the compiled plots to include a common y-axis
 SFZFullBroodDistPlot <- annotate_figure(SFZBroodDistPlot,
@@ -2644,7 +2643,7 @@ SFZDistArea1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(De
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   xlim(0, 1) +
-  ylim(0, 3) 
+  ylim(0, 4) 
 
 # Low density treatment
 SFZDistArea2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2676,7 +2675,7 @@ SFZDistArea2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(De
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 1) +
-  ylim(0, 3) 
+  ylim(0, 4) 
 
 # Compiling worker fidelity zone size v. worker scaled distance to the nest entrance plots
 SFZDistAreaPlot <- ggarrange(SFZDistArea1, SFZDistArea2,
@@ -2844,7 +2843,7 @@ SFZBroodDistArea1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 1) +
-  ylim(0, 3) 
+  ylim(0, 4) 
 
 # Low density treatment
 SFZBroodDistArea2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2874,7 +2873,7 @@ SFZBroodDistArea2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
   xlim(0, 1) +
-  ylim(0, 3) 
+  ylim(0, 4) 
 
 # Compiling worker fidelity zone size v. worker scaled distance to the brood center plots and include a common legend
 SFZBroodDistAreaPlot <- ggarrange(SFZBroodDistArea1, SFZBroodDistArea2,
