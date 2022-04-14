@@ -55,6 +55,8 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 * ScaledY: Y-axis coordinate, scaled from original (px) to (cm) in the software Fiji 
 * SexID: The unique sex assignment and number given to an individual alate: Sex, SexNumber, TotalNumber (i.e., the first male alate observation that came after three queen alates making it the fourth total observation = M,1,4) 
 
+***
+
 #### NETLOGO SIMULATIONS: ArchitectureMoveModelFull.csv
 ###### Raw netlogo simulation data with agent x and y positions in nests
 * RunNumber: The simulation number - 1 to 4000 - there are 1000 simulations for each combination of nest shape and size
