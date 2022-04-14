@@ -1,7 +1,7 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: MAR 2021
-## email: gchism@email.arizona.edu
+## Date: APR 2022
+## email: gchism@arizona.edu
 ## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Calculating colony member proportions in nest sections, importing and preparing Netlogo simulation data, all paper analyses and figures 
 ####################################################################################################################
@@ -22,22 +22,17 @@ install.packages("pacman") # Download package with function to load multiple pac
 
 pacman::p_load(tidyverse, 
                forcats,
+               formattable,
                ggpubr,
-               Kendall,
-               kuiper.2samp,
                lme4,
                lmerTest,
                magick,
                magrittr,
                MuMIn,
-               RColorBrewer,
                tidyverse,
                wesanderson,
-               assertthat,
                twosamples,
-               RColorBrewer,
                ggpointdensity,
-               readxl,
                scales,
                viridis)
 
@@ -52,15 +47,19 @@ pacman::p_load(tidyverse,
 # NETLOGO SIMULATIONS
 # High nest density
 WorkerSim1PropAnalysisSmall <- AntPropFullSim %>% filter(NestSize == "Small")
+
 # Tube nest shape
-WorkerSim1TubePropAnalysis <- WorkerSim1PropAnalysisSmall %>% ilter(Nest == "Tube")
+WorkerSim1TubePropAnalysis <- WorkerSim1PropAnalysisSmall %>% filter(Nest == "Tube")
+
 # Circle nest shape
 WorkerSim1CirclePropAnalysis <- WorkerSim1PropAnalysisSmall %>% filter(Nest == "Circle")
 
 # Low nest density
 WorkerSim2PropAnalysisLarge <- AntPropFullSim %>% filter(NestSize == "Large")
+
 # Tube nest shape
 WorkerSim2TubePropAnalysisRD2 <- WorkerSim2PropAnalysisLarge %>% filter(Nest == "Tube")
+
 # Circle nest shape
 WorkerSim2CirclePropAnalysisRD2 <- WorkerSim2PropAnalysisLarge %>% filter(Nest == "Circle")
 
@@ -68,79 +67,181 @@ WorkerSim2CirclePropAnalysisRD2 <- WorkerSim2PropAnalysisLarge %>% filter(Nest =
 # High nest density
 # Tube nest shape
 WorkerTubePropAnalysis <- AntPropFullWorkers %>% filter(Nest == "Tube")
+
 # Circle nest shape
 WorkerCirclePropAnalysis <- AntPropFullWorkers %>% filter(Nest == "Circle")
 
 # Low nest density
 # Tube nest shape
 WorkerTubePropAnalysisRD2 <- AntPropFullWorkersRD2 %>% filter(Nest == "Tube")
+
 # Circle nest shape
 WorkerCirclePropAnalysisRD2 <- AntPropFullWorkersRD2 %>% filter(Nest == "Circle")
 
 # SIMULATION & EXPERIMENTAL DISTRIBUTION COMPARISIONS - CRAMER VON MISES TESTS WITH BENJAMINI-HOCHBERG FDR POST-HOC P-VALUE CORRECTIONS
 # High density tube nest comparison
-cvm_EmpTube1.SimTube1 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+# Test statistic
+cvm_EmpTube1.SimTube1.1 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[1]) %>%
   mutate(Test = "EmpTube1.SimTube1") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvm_EmpTube1.SimTube1.2 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube1.SimTube1") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvm_EmpTube1.SimTube1 <- full_join(cvm_EmpTube1.SimTube1.1, cvm_EmpTube1.SimTube1.2)
 
 # Low density tube nest comparison
-cvm_EmpTube2.SimTube2 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+# Test stat
+cvm_EmpTube2.SimTube2.1 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "EmpTube2.SimTube2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvm_EmpTube2.SimTube2.2 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube2.SimTube2") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvm_EmpTube2.SimTube2 <- full_join(cvm_EmpTube2.SimTube2.1, cvm_EmpTube2.SimTube2.2)
 
 # High density circle nest comparison
-cvm_EmpCircle1.SimCircle1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
+# Test statistic
+cvm_EmpCircle1.SimCircle1.1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[1]) %>%
   mutate(Test = "EmpCircle1.SimCircle1") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvm_EmpCircle1.SimCircle1.2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle1.SimCircle1") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvm_EmpCircle1.SimCircle1 <- full_join(cvm_EmpCircle1.SimCircle1.1, cvm_EmpCircle1.SimCircle1.2)
 
 # Low density circle nest comparison
-cvm_EmpCircle2.SimCircle2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+# Test statistic
+cvm_EmpCircle2.SimCircle2.1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "EmpCircle2.SimCircle2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvm_EmpCircle2.SimCircle2.2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle2.SimCircle2") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvm_EmpCircle2.SimCircle2 <- full_join(cvm_EmpCircle2.SimCircle2.1, cvm_EmpCircle2.SimCircle2.2)
 
 # High density tube nest empirical workers v. low density tube nest simulations
-cvmEmpTube1.SimTube2 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+# Test statistic
+cvmEmpTube1.SimTube2.1 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "EmpTube1.SimTube2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvmEmpTube1.SimTube2.2 <- as.data.frame(cvm_test(WorkerTubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube1.SimTube2") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmEmpTube1.SimTube2 <- full_join(cvmEmpTube1.SimTube2.1, cvmEmpTube1.SimTube2.2)
 
 # Low density tube nest empirical workers v. high density tube nest simulations
-cvmEmpTube2.SimTube1 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+# Test statistic
+cvmEmpTube2.SimTube1.1 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[1]) %>%
   mutate(Test = "EmpTube2.SimTube1") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvmEmpTube2.SimTube1.2 <- as.data.frame(cvm_test(WorkerTubePropAnalysisRD2$PropWorker, WorkerSim1TubePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpTube2.SimTube1") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmEmpTube2.SimTube1 <- full_join(cvmEmpTube2.SimTube1.1, cvmEmpTube2.SimTube1.2)
 
 # High density circle nest empirical workers v. low density circle nest simulations
-cvmEmpCircle1.SimCircle2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+# Test statistic
+cvmEmpCircle1.SimCircle2.1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "EmpCircle1.SimCircle2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
 
-# Low density circle nest empirical workers v. high density circle nest simulations
-cvmEmpCircle2.SimCircle1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
-  mutate(Test = "EmpCircle2.SimCircle1") %>%
-  rename("P-Value" = 1) %>%
+# P-value
+cvmEmpCircle1.SimCircle2.2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle1.SimCircle2") %>%
+  rename("P_value" = 1) %>%
   remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmEmpCircle1.SimCircle2 <- full_join(cvmEmpCircle1.SimCircle2.1, cvmEmpCircle1.SimCircle2.2)
+
+# Low density circle nest empirical workers v. high density circle nest simulations
+# Test statistic
+cvmEmpCircle2.SimCircle1.1 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[1]) %>%
+  mutate(Test = "EmpCircle2.SimCircle1") %>%
+  rename("Test_stat" = 1) %>%
+  remove_rownames()
+
+# P-value
+cvmEmpCircle2.SimCircle1.2 <- as.data.frame(cvm_test(WorkerCirclePropAnalysisRD2$PropWorker, WorkerSim1CirclePropAnalysis$PropWorker)[2]) %>%
+  mutate(Test = "EmpCircle2.SimCircle1") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmEmpCircle2.SimCircle1 <- full_join(cvmEmpCircle2.SimCircle1.1, cvmEmpCircle2.SimCircle1.2)
 
 # COMPARING SIMULATIONS
 # High density vs low density tube nest
 # Note that because this statistic is calculated through bootstrap resamplings there is a slightly different p-value each time, but it is always > 0.95
-cvmSimTube1.SimTube2 <- as.data.frame(cvm_test(WorkerSim1TubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+# Test statistic
+cvmSimTube1.SimTube2.1 <- as.data.frame(cvm_test(WorkerSim1TubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "SimTube1.SimTube2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
+
+# P-value
+cvmSimTube1.SimTube2.2 <- as.data.frame(cvm_test(WorkerSim1TubePropAnalysis$PropWorker, WorkerSim2TubePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "SimTube1.SimTube2") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmSimTube1.SimTube2 <- full_join(cvmSimTube1.SimTube2.1, cvmSimTube1.SimTube2.2)
 
 # High density vs low density circle nest
-cvmSimCircle1.SimCircle2 <- as.data.frame(cvm_test(WorkerSim1CirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+# Test Statistic
+cvmSimCircle1.SimCircle2.1 <- as.data.frame(cvm_test(WorkerSim1CirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[1]) %>%
   mutate(Test = "SimCircle1.SimCircle2") %>%
-  rename("P-Value" = 1) %>%
+  rename("Test_stat" = 1) %>%
   remove_rownames()
 
-# Full set of cvm p-values
+# P-value
+cvmSimCircle1.SimCircle2.2 <- as.data.frame(cvm_test(WorkerSim1CirclePropAnalysis$PropWorker, WorkerSim2CirclePropAnalysisRD2$PropWorker)[2]) %>%
+  mutate(Test = "SimCircle1.SimCircle2") %>%
+  rename("P_value" = 1) %>%
+  remove_rownames()
+
+# Final data frame with test statistic and p-value
+cvmSimCircle1.SimCircle2 <- full_join(cvmSimCircle1.SimCircle2.1, cvmSimCircle1.SimCircle2.2)
+
+# Full set of CVM p-values
 FullcvmDists <- full_join(cvm_EmpTube1.SimTube1, cvm_EmpTube2.SimTube2) %>%
   full_join(cvm_EmpCircle1.SimCircle1) %>% 
   full_join(cvm_EmpCircle2.SimCircle2) %>% 
@@ -152,11 +253,14 @@ FullcvmDists <- full_join(cvm_EmpTube1.SimTube1, cvm_EmpTube2.SimTube2) %>%
   full_join(cvmSimCircle1.SimCircle2)
 
 # Benjamini-Hochberg method for correcting False Discovery Rates in multiple comparison testing p-values
-BH.P.adjust <- as.data.frame(p.adjust(FullcvmDists$`P-Value`, method = "BH")) %>%
+BH.P.adjust <- as.data.frame(p.adjust(FullcvmDists$P_value, method = "BH")) %>%
   rename(BH.P.adjust = 1)
 
 # Final adjusted p-values for multiple cvm comparisons 
 FullcvmDists.adj <- cbind(FullcvmDists, BH.P.adjust)
+
+# Creates a clean HTML file of the data frame
+formattable(FullcvmDists.adj)
 
 # DETERMINING MAX WORKER AND NETLOGO SIMULATION PROPORTIONS IN NEST SECTIONS
 # WORKERS 
@@ -191,7 +295,7 @@ WorkerSimPropFullRD1 <- full_join(AntPropFullWorkers, WorkerSim1PropAnalysisSmal
 WorkerSimPropFullRD2 <- full_join(AntPropFullWorkersRD2, WorkerSim2PropAnalysisLarge)
 
 # All proportions
-AntPropFullWorkersSimRD1_RD2 <- full_join(WorkerSimPropFullRD1, WorkerSimPropFullRD2)# Join all worker proportions data sets
+AntPropFullWorkersSimRD1_RD2 <- full_join(WorkerSimPropFullRD1, WorkerSimPropFullRD2) # Join all worker proportions data sets
 
 # BOXPLOTS 
 # TUBE NEST
@@ -207,10 +311,10 @@ WorkerPlotRD1Tube <- ggplot(data = WorkerSimPropFullRD1 %>% filter(Nest == "Tube
   ylab("Proportions of workers") +
   ggtitle("High density") +
   theme_pubclean() +  
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.87, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.87, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(values = c("red", "white"), 
                     labels = c("Obsv", "RandWalk")) +
@@ -228,19 +332,19 @@ WorkerPlotRD2Tube <- ggplot(data = WorkerSimPropFullRD2 %>% filter(Nest == "Tube
   ylab("Proportions of workers") +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1, 0.7),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Worker type", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Worker type", color = "black")) +
   scale_fill_manual(values = c("red", "white"),
                     labels = c("Obsv", "RandWalk")) +
   ylim(0, 0.8)
@@ -248,16 +352,16 @@ WorkerPlotRD2Tube <- ggplot(data = WorkerSimPropFullRD2 %>% filter(Nest == "Tube
 # Compiling the empirical worker density in nest sections box plots 
 WorkerPropPlot <- ggarrange(WorkerPlotRD1Tube, WorkerPlotRD2Tube,
                             labels = c("(a)", "(b)"),
-                            font.label = list(size = 18, family = "Arial", face = "plain"),
+                            font.label = list(size = 18, face = "plain"),
                             label.x = 0.9,
                             label.y = 1,
                             ncol = 2, nrow = 1,
                             common.legend = FALSE)
 
 # Annotating the compiled tube nest plot to include a title
-WorkerPropPlotAnnot <-annotate_figure(WorkerPropPlot,
+WorkerPropPlotAnnot <- annotate_figure(WorkerPropPlot,
                                       top = text_grob("Tube nest", color = "black",
-                                                      size = 18, x = 0.08, y = -0.8, family = "Arial"),
+                                                      size = 18, x = 0.08, y = -0.8),
                                       bottom = NULL,
                                       left = NULL,
                                       right = NULL, 
@@ -278,9 +382,9 @@ WorkerPlotRD1Circle <- ggplot(data = WorkerSimPropFullRD1 %>% filter(Nest == "Ci
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "white", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "white", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(values = c("blue", "white"),
                     labels = c("Obsv", "RandWalk")) +
@@ -298,19 +402,19 @@ WorkerPlotRD2Circle <- ggplot(data = WorkerSimPropFullRD2 %>% filter(Nest == "Ci
   ylab("Proportions of workers") +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, color = "white", family = "Arial"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "white", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "white", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.75),
         legend.position = c(1, 0.7),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Worker type", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Worker type", color = "black")) +
   scale_fill_manual(values = c("blue", "white"),
                     labels = c("Obsv", "RandWalk")) +
   ylim(0, 0.5)
@@ -318,7 +422,7 @@ WorkerPlotRD2Circle <- ggplot(data = WorkerSimPropFullRD2 %>% filter(Nest == "Ci
 # Compiling the two above circle nest box plots 
 WorkerPropPlot2 <- ggarrange(WorkerPlotRD1Circle, WorkerPlotRD2Circle,
                            labels = c("(c)", "(d)"),
-                           font.label = list(size = 18, family = "Arial", color = "black", face = "plain"),
+                           font.label = list(size = 18, color = "black", face = "plain"),
                            label.x = 0.9,
                            label.y = 1,
                            ncol = 2, nrow = 1,
@@ -327,7 +431,7 @@ WorkerPropPlot2 <- ggarrange(WorkerPlotRD1Circle, WorkerPlotRD2Circle,
 # Annotating the compiled circle nest plot to include a title
 WorkerPropPlotAnnot2 <- annotate_figure(WorkerPropPlot2,
                                         top = text_grob("Circle nest", color = "black",
-                                                        size = 18, x = 0.08, y = -0.8, family = "Arial"),
+                                                        size = 18, x = 0.08, y = -0.8),
                                         bottom = NULL,
                                         left = NULL,
                                         right = NULL
@@ -342,9 +446,9 @@ WorkerPropPlotAnnotFull <- ggarrange(WorkerPropPlotAnnot, WorkerPropPlotAnnot2,
 annotate_figure(WorkerPropPlotAnnotFull,
                          top = NULL,
                          bottom = text_grob("Nest section", color = "black",
-                                            size = 18, x = 0.5, family = "Arial"),
+                                            size = 18, x = 0.5),
                          left = text_grob("Proportions of workers", color = "black",
-                                          size = 18, rot = 90, family = "Arial"),
+                                          size = 18, rot = 90),
                          right = NULL)
 
 # LINEAR REGRESSION: observed & simulated workers
@@ -374,7 +478,7 @@ summary(lmer(PropWorker ~ poly(Bin, degree = 2, raw = TRUE) * Nest * Density + D
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(PropWorker ~ poly(Bin, degree = 2, raw = TRUE) * Nest * Density + Day + Corner + (1|Colony), data = AntPropFullWorkersRD1_RD2))
 
-# NEST SECTION THAT HOLDS THE MAXIMUM EMPIRICAL AND NETLOGO SIMULATED WORKER PROPORTION
+# SUPPLEMENTARY: NEST SECTION THAT HOLDS THE MAXIMUM EMPIRICAL AND NETLOGO SIMULATED WORKER PROPORTION
 # GLM LINE PLOTS 
 # High nest density
 MaxLog1 <- MaxPropWorkersFull %>% 
@@ -388,9 +492,9 @@ MaxLog1 <- MaxPropWorkersFull %>%
   theme_pubclean() + 
   ggtitle("Observed") +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = -0.1, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = -0.1, vjust = 0.5),
         legend.position = "none") +
   xlab(NULL) +
   ylab(NULL) +
@@ -413,20 +517,20 @@ MaxLog2 <- MaxPropWorkersFull %>%
   theme_pubclean() +
   ggtitle("Random walk") +
   theme(axis.ticks = element_blank(),
-        axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = -0.1, vjust = -10),
+        axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.title = element_text(size = 18, color = "black"),
+        plot.title = element_text(size = 18, color = "black", hjust = -0.1, vjust = 0.5),
         legend.key = element_blank(),
         legend.position = c(0.975, 0.95),
         legend.direction = "horizontal",
         legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, family = "Arial"),
-        legend.title = element_text(size = 18, family = "Arial"),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 18),
         legend.key.size = unit(1, 'cm')) +
   xlab(NULL) +
   ylab(NULL) +
-  guides(color = guide_legend(title = "Nest", family = "Arial",
+  guides(color = guide_legend(title = "Nest",
                               order = 1),
          linetype = guide_legend(order = 2)) +
   scale_color_manual(breaks = c("Tube", "Circle"), 
@@ -440,7 +544,7 @@ MaxLog2 <- MaxPropWorkersFull %>%
 MaxLogPlot <- ggarrange(MaxLog1, MaxLog2,
                         labels = c("(a)", "(b)"),
                         label.x = 0.9,
-                        font.label = list(size = 18, family = "Arial", face = "plain"),
+                        font.label = list(size = 18, face = "plain"),
                         ncol = 2, nrow = 1,
                         common.legend = FALSE)
 
@@ -448,9 +552,9 @@ MaxLogPlot <- ggarrange(MaxLog1, MaxLog2,
 annotate_figure(MaxLogPlot,
                                   top = NULL,
                                   bottom = text_grob("Nest section", color = "black",
-                                                     size = 18, family = "Arial"),
+                                                     size = 18),
                                   left = text_grob("Max worker proportion", color = "black",
-                                                   size = 18, rot = 90, family = "Arial"),
+                                                   size = 18, rot = 90),
                                   right = NULL
 )
 
@@ -477,12 +581,12 @@ BroodProp1 <- ggplot(data = AntPropFullBrood %>% arrange(Nest),
   ylab(NULL) +
   ggtitle("High density") +
   theme_pubclean() +  
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.87, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.87, vjust = 0.5),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -499,19 +603,19 @@ BroodProp2 <- ggplot(data = AntPropFullBroodRD2 %>% arrange(Nest),
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
-        axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text.y = element_text(size = 18, color = "white"),
+        axis.text.x = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1, 0.7),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -521,7 +625,7 @@ BroodProp2 <- ggplot(data = AntPropFullBroodRD2 %>% arrange(Nest),
 # Compiling the two above brood densities in nest sections boxplots 
 BroodPropPlot <- ggarrange(BroodProp1, BroodProp2,
                            labels = c("(a)", "(b)"),
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            label.x = 0.9,
                            label.y = 1,
                            ncol = 2, nrow = 1,
@@ -529,10 +633,12 @@ BroodPropPlot <- ggarrange(BroodProp1, BroodProp2,
 
 # Annotating the compiled boxplots to include shared axes lables
 BroodPropPlotFull <- annotate_figure(BroodPropPlot,
-                                   top = text_grob("Brood", color = "black", size = 18, x = 0.055, y = -0.6, family = "Arial"),
+                                   top = text_grob("Brood", color = "black", 
+                                                   size = 18, 
+                                                   x = 0.055, y = -0.6),
                                    bottom = NULL,
                                    left = text_grob("Proportions of brood", color = "black",
-                                                    size = 18, rot = 90, family = "Arial"),
+                                                    size = 18, rot = 90),
                                    right = NULL
 )
 
@@ -564,11 +670,11 @@ QueenProp1 <- ggplot(data = AntPropFullQueen %>% arrange(Nest),
   xlab(NULL) + 
   ylab(NULL) +
   theme_pubclean() +
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -585,9 +691,9 @@ QueenProp2 <- ggplot(data = AntPropFullQueenRD2 %>% arrange(Nest),
   ylab(NULL) +
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text.x = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        axis.text.y = element_text(size=18, color = "white", family="Arial"),
+        axis.text.y = element_text(size = 18, color = "white"),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -597,18 +703,21 @@ QueenProp2 <- ggplot(data = AntPropFullQueenRD2 %>% arrange(Nest),
 # Compiling the two above queen densities in nest sections boxplots 
 QueenPropPlot <- ggarrange(QueenProp1, QueenProp2,
                            labels = c("(c)", "(d)"),
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            label.x = 0.9,
                            label.y = 1.045,
                            ncol = 2, nrow = 1)
 
 # Annotating the compiled boxplots to include common axes labels
 QueenPropPlotFull <- annotate_figure(QueenPropPlot,
-                top = text_grob("Queens", color = "black", size = 18, x = 0.0625, y = 0, family = "Arial"),
+                top = text_grob("Queens", color = "black", 
+                                size = 18, 
+                                x = 0.0625, y = 0),
                 bottom = text_grob("Nest section", color = "black",
-                                   size = 18, x = 0.5, family = "Arial"),
+                                   size = 18, 
+                                   x = 0.5),
                 left = text_grob("Proportions of queens", color = "black",
-                                 size = 18, rot = 90, family = "Arial"),
+                                 size = 18, rot = 90),
                 right = NULL
 )
 
@@ -645,12 +754,12 @@ AlatePropFig <- ggplot(data = AntPropFullAlateRD2 %>% arrange(Nest),
   xlab("Nest section") + 
   ylab("Proportions of alates") +
   theme_pubclean() +
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "black"),
+        axis.title = element_text(size = 18, color = "black"),
+        plot.title = element_text(size = 18, face = "bold", color = "black"),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -659,14 +768,17 @@ AlatePropFig <- ggplot(data = AntPropFullAlateRD2 %>% arrange(Nest),
 # Arranging the above alate densities in nest sections boxplot 
 AlatePropPlot <- ggarrange(AlatePropFig,
                            labels = c("(e)"),
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            label.x = 0.9,
                            label.y = 1.0325,
                            ncol = 1, nrow = 1)
 
 # Annotating the alate proportions boxplot to include a title
 annotate_figure(AlatePropPlot,
-                                   top = text_grob("Alates", color = "black", size = 18, x = 0.15, y = 0, family = "Arial"),
+                                   top = text_grob("Alates", 
+                                                   color = "black", 
+                                                   size = 18, 
+                                                   x = 0.15, y = 0),
                                    bottom = NULL,
                                    left = NULL,
                                    right = NULL
@@ -683,9 +795,6 @@ annotate_figure(AlatePropPlot,
 # RANDOM EFFECT
 # (1|Colony) - Colony identification  
 summary(lmer(PropAlate ~  poly(Bin, degree = 2, raw = TRUE) * Nest + Day + Corner + (1|Colony), data = AntPropFullAlateRD2))
-
-ggplot(BroodCentDistWorkersSFZ %>% filter(Nest == "Tube"), aes(MeanToBrood, Occur)) +
-  geom_smooth(method = "lm")
 
 # Marginal and conditional R-squared values for the linear mixed effects model above
 r.squaredGLMM(lmer(PropAlate ~ poly(Bin, degree = 2, raw = TRUE) * Nest + Day + Corner + (1|Colony), data = AntPropFullAlateRD2))
@@ -712,9 +821,9 @@ WorkerDist1 <- ggplot(WorkerDistScaled %>% arrange(Nest),
   ylab(NULL) +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -733,19 +842,19 @@ WorkerDist2 <- ggplot(WorkerDistScaledRD2 %>% arrange(Nest),
   xlab(NULL) + 
   ylab(NULL) +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
-        legend.position = c(1.05, 0.7),
+        legend.position = c(1.0, 0.7),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -755,14 +864,14 @@ WorkerDist2 <- ggplot(WorkerDistScaledRD2 %>% arrange(Nest),
 WorkerDistPlot <- ggarrange(WorkerDist1, WorkerDist2,
                           labels = c("(a)", "(b)"),
                           label.x = 0.9,
-                          font.label = list(size = 18, family = "Arial", face = "plain"),
+                          font.label = list(size = 18, face = "plain"),
                           ncol = 2, nrow = 1,
                           common.legend = FALSE)
 
 # Annotating the compiled plot to add a title
 WorkerDistPlotFull <- annotate_figure(WorkerDistPlot,
                 top = text_grob("Workers", color = "black",
-                                size = 18, x = 0.055, y = -0.6, family = "Arial"),
+                                size = 18, x = 0.055, y = -0.6),
                 bottom = NULL,
                 left =  NULL,
                 right = NULL
@@ -782,9 +891,9 @@ SimDist1 <- ggplot(SimDistScaled %>% filter(NestSize == "Small") %>% arrange(Nes
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -805,9 +914,9 @@ SimDist2 <- ggplot(SimDistScaled %>% filter(NestSize == "Large") %>% arrange(Nes
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -820,20 +929,20 @@ WorkerSimPlot <- ggarrange(SimDist1, SimDist2,
                           labels = c("(c)", "(d)"),
                           label.x = 0.9,
                           label.y = 0.99,
-                          font.label = list(size = 18, family = "Arial", face = "plain"),
+                          font.label = list(size = 18, face = "plain"),
                           ncol = 2, nrow = 1)
 
 # Annotating the compiled plot to add a title
 WorkerSimPlotFull <- annotate_figure(WorkerSimPlot,
                 top = text_grob("Random walk", color = "black",
-                                size = 18, x = 0.089, y = -1, family = "Arial"),
+                                size = 18, x = 0.089, y = -1),
                 bottom = NULL,
                 left =  NULL,
                 right = NULL
 )
 
 # Compiling the worker and Netlogo simulation histograms
-FullDistPlot<-ggarrange(WorkerDistPlotFull, WorkerSimPlotFull,
+FullDistPlot <- ggarrange(WorkerDistPlotFull, WorkerSimPlotFull,
                         ncol = 1, nrow = 2,
                         common.legend = FALSE)
 
@@ -841,9 +950,9 @@ FullDistPlot<-ggarrange(WorkerDistPlotFull, WorkerSimPlotFull,
 annotate_figure(FullDistPlot,
                 top = NULL,
                 bottom = text_grob("Scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = text_grob("Obsv / sim worker count", color = "black",
-                                 size = 18,  rot = 90, family = "Arial"),
+                                 size = 18,  rot = 90),
                 right = NULL
 )
 
@@ -891,11 +1000,11 @@ BroodDist1 <- ggplot(BroodDistScaled %>% arrange(Nest),
   ylab(NULL) +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18,color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -20),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -914,19 +1023,19 @@ BroodDist2 <- ggplot(BroodDistScaledRD2 %>% arrange(Nest),
   xlab(NULL) + 
   ylab(NULL) +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -10),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1.05, 0.685),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -937,17 +1046,17 @@ BroodDist2 <- ggplot(BroodDistScaledRD2 %>% arrange(Nest),
 BroodDistPlot <- ggarrange(BroodDist1, BroodDist2,
                            labels = c("(a)", "(b)"),
                            label.x = 0.9,
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
 # Annotating the compiled histograms to include a common x axis labels and  title
 BroodFullDist <- annotate_figure(BroodDistPlot,
                                  top = text_grob("Brood", color = "black",
-                                                 size = 18, x = 0.055, y = -0.6, family = "Arial"),
+                                                 size = 18, x = 0.055, y = -0.6),
                                  bottom = NULL,
                                  left =  text_grob("Brood count", color = "black",
-                                                   size = 18, x = 0.525, rot = 90, family = "Arial"),
+                                                   size = 18, x = 0.525, rot = 90),
                                  right = NULL
 )
 
@@ -980,9 +1089,9 @@ QueenDist1 <- ggplot(QueenDistScaled %>% arrange(Nest),
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = -20),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1002,9 +1111,9 @@ QueenDist2 <- ggplot(QueenDistScaledRD2 %>% arrange(Nest),
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = -20),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1017,16 +1126,16 @@ QueenDistPlot <- ggarrange(QueenDist1, QueenDist2,
                            labels = c("(c)", "(d)"),
                            label.x = 0.9,
                            label.y = 0.99,
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1)
 
 # Annotating the compiled histograms to include a common x axis labels and  title
 QueenFullDist <- annotate_figure(QueenDistPlot,
                                top = text_grob("Queens", color = "black",
-                                               size = 18, x = 0.06, y = -1, family = "Arial"),
+                                               size = 18, x = 0.06, y = -1),
                                bottom = NULL,
                                left = text_grob("Queen count", color = "black",
-                                                         size = 18, x = 0.525, rot = 90, family = "Arial"),
+                                                         size = 18, x = 0.525, rot = 90),
                                right = NULL
 )
 
@@ -1038,7 +1147,7 @@ BroodQueenDist <- ggarrange(BroodFullDist, QueenFullDist,
 annotate_figure(BroodQueenDist,
                 top = NULL,
                 bottom = text_grob("Scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
@@ -1076,13 +1185,13 @@ AlateDist1 <- ggplot(AlateDistScaledRD2Plot %>% arrange(Nest),
   ylab("Alate count") +
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_text(size = 18, color = "black"),
         legend.justification = c(0.5, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -1098,12 +1207,12 @@ AlateDist2 <- ggplot(AlateDistScaledRD2Plot %>% arrange(Nest),
                       alpha = 0.65) + 
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_text(size = 18, color = "black"),
         legend.key = element_blank(),
         legend.justification = c(0.5, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1116,14 +1225,14 @@ AlateDistPlot <- ggarrange(AlateDist1, AlateDist2,
                            labels = c("(e)", "(f)"),
                            label.x = 0.9,
                            label.y = 0.965, 
-                           font.label = list(size = 18, face = "plain", family = "Arial"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
 # Annotating the compiled plots to include a title
 annotate_figure(AlateDistPlot,
                 top = text_grob("Alates", color = "black",
-                                size = 18, x = 0.06, y = -1.30, family = "Arial"),
+                                size = 18, x = 0.06, y = -1.30),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -1162,9 +1271,9 @@ WorkerMeanDist1 <- ggplot(WorkerDistScaledMeanDist %>% arrange(Nest) %>% filter 
   ggtitle("High density") +
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1187,18 +1296,19 @@ WorkerMeanDist2 <- ggplot(WorkerDistScaledMeanDist %>% arrange(Nest) %>% filter 
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),axis.ticks = element_blank(),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1.05, 0.685),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
@@ -1215,18 +1325,18 @@ WorkerMeanDist3 <- ggplot(WorkerDistScaledMeanDist %>% arrange(Nest),
   ylab("Mean scaled dist to nest sections") +
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial"),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_text(size = 18, color = "black"),
+        plot.title = element_text(size = 18, face = "bold"),
         legend.key = element_blank(),
         legend.justification = c(1, 0.5),
         legend.box = "verticle",
         legend.position = "right",
         legend.margin=margin(),
-        legend.text = element_text(size = 18, family = "Arial"),
-        legend.title = element_text(size = 18, family = "Arial"),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 18),
         legend.key.size = unit(1, 'cm')) +
-  guides(color = guide_legend(title = "Nest", family = "Arial",
+  guides(color = guide_legend(title = "Nest",
                               order = 1),
          linetype = guide_legend(order = 2)) +
   scale_color_manual(breaks = c("Tube", "Circle"), 
@@ -1239,7 +1349,7 @@ WorkerMeanDistPlot <- ggarrange(WorkerMeanDist1, WorkerMeanDist2,
                          labels = c("(a)", "(b)"),
                          label.x = 0.9,
                          label.y = 1,    
-                         font.label = list(size = 18, face = "plain", family = "Arial"),
+                         font.label = list(size = 18, face = "plain"),
                          ncol = 2, nrow = 1,
                          common.legend = FALSE)
 
@@ -1247,9 +1357,9 @@ WorkerMeanDistPlot <- ggarrange(WorkerMeanDist1, WorkerMeanDist2,
 annotate_figure(WorkerMeanDistPlot,
                 top = NULL,
                 bottom = text_grob("Mean scaled dist to nest sections", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = text_grob("Worker count", color = "black",
-                                 size = 18, x = 0.525, rot = 90, family = "Arial"),
+                                 size = 18, x = 0.525, rot = 90),
                 right = NULL
 )
 
@@ -1258,7 +1368,7 @@ ggarrange(WorkerMeanDist3,
                                 labels = c("(c)"),
                                 label.x = 0.725,
                                 label.y = 0.97,    
-                                font.label = list(size = 18, face = "plain", family = "Arial"),
+                                font.label = list(size = 18, face = "plain"),
                                 ncol = 1, nrow = 1,
                                 common.legend = FALSE)
 
@@ -1299,16 +1409,16 @@ WorkerBroodDist1 <- ggplot(BroodCentDistWorkersRD1 %>% arrange(Nest),
   ylab(NULL) +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) + 
-  xlim(0, 1) + 
-  ylim(0, 3000)
+  xlim(0, 0.85) + 
+  ylim(0, 4000)
 
 # Low density treatment
 WorkerBroodDist2 <- ggplot(BroodCentDistWorkersRD2 %>% arrange(Nest), 
@@ -1322,40 +1432,40 @@ WorkerBroodDist2 <- ggplot(BroodCentDistWorkersRD2 %>% arrange(Nest),
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1.05, 0.7),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) + 
-  xlim(0, 1) + 
-  ylim(0, 3000)
+  xlim(0, 0.85) + 
+  ylim(0, 4000)
 
 #Compiling worker scaled distances from brood center plots
 WorkerBroodDistPlot <- ggarrange(WorkerBroodDist1, WorkerBroodDist2,
                                  labels = c("(a)", "(b)"),
                                  label.x = 0.9,
-                                 font.label = list(size = 18, family = "Arial", face = "plain"),
+                                 font.label = list(size = 18, face = "plain"),
                                  ncol = 2, nrow = 1,
                                  common.legend = FALSE)
 
 #Annotating the compiled plot to include a common y axis and title
 WorkerFullBroodDist <- annotate_figure(WorkerBroodDistPlot,
                                        top = text_grob("Workers", color = "black",
-                                                       size = 18, x = 0.06, y = -0.675, family = "Arial"),
+                                                       size = 18, x = 0.06, y = -0.675),
                                        bottom = NULL,
                                        left = text_grob("Worker count", color = "black",
-                                                  size = 18, rot = 90, family = "Arial"),
+                                                  size = 18, rot = 90),
                                        right = NULL
 )
 
@@ -1389,14 +1499,15 @@ QueenBroodDist1 <- ggplot(BroodCentDistQueensRD1 %>% arrange(Nest),
   ylab(NULL) +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
+  xlim(0, 0.85) + 
   ylim(0, 200)
 
 #Low density treatment
@@ -1408,42 +1519,43 @@ QueenBroodDist2 <- ggplot(BroodCentDistQueensRD2 %>% arrange(Nest),
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
+  xlim(0, 0.85) + 
   ylim(0, 200)
 
 # Compiling queens scaled distances to the brood center plots
 QueenBroodDistPlot <- ggarrange(QueenBroodDist1, QueenBroodDist2,
                                 labels = c("(c)", "(d)"),
                                 label.x = 0.9,
-                                font.label = list(size = 18, family = "Arial", face = "plain"),
+                                font.label = list(size = 18, face = "plain"),
                                 ncol = 2, nrow = 1,
                                 common.legend = FALSE)
 
 # Annotating the compiled plots to include a common y axis and title
 QueenBroodFullDist <- annotate_figure(QueenBroodDistPlot,
                                       top = text_grob("Queens", color = "black",
-                                                      size = 18, x = 0.06, y = -0.75, family = "Arial"),
+                                                      size = 18, x = 0.06, y = -0.75),
                                       bottom = NULL,
                                       left = text_grob("Queen count", color = "black",
-                                                  size = 18, rot = 90, family = "Arial"),
+                                                  size = 18, rot = 90),
                                       right = NULL
 )
 
 # Compiling the Worker and queen scaled distance to the brood center
-WorkerQueenBroodDist<-ggarrange(WorkerFullBroodDist, QueenBroodFullDist,
+WorkerQueenBroodDist <- ggarrange(WorkerFullBroodDist, QueenBroodFullDist,
                           ncol = 1, nrow = 2)
 
-# Annotating the compiled plot to include a commpn x axis
+# Annotating the compiled plot to include a common x axis
 annotate_figure(WorkerQueenBroodDist,
                 top = NULL,
                 bottom = text_grob("Scaled distance to brood center", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
@@ -1480,14 +1592,14 @@ AlateBroodPlot <- ggplot(BroodCentDistAlatesRD2Plot %>% arrange(Nest),
   ylab("Alate count") +
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_text(size = 18, family = "Arial"),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_text(size = 18),
         legend.key = element_blank(),
         legend.justification = c(0.5, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial")) +
+  guides(fill = guide_legend(title = "Nest")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue"))
@@ -1502,12 +1614,12 @@ AlateBroodPlot2 <- ggplot(BroodCentDistAlatesRD2Plot %>% arrange(Nest),
                       alpha = 0.65) + 
   theme_pubclean() +
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_text(size = 18, color = "black"),
         legend.key = element_blank(),
         legend.justification = c(0.5, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
@@ -1520,14 +1632,14 @@ AlateToBroodPlot <- ggarrange(AlateBroodPlot, AlateBroodPlot2,
                            labels = c("(e)", "(f)"),
                            label.x = 0.9,
                            label.y = 0.965, 
-                           font.label = list(size = 18, face = "plain", family = "Arial"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
-# Annotating the compiled pltos to include a title
+# Annotating the compiled plots to include a title
 annotate_figure(AlateToBroodPlot,
                 top = text_grob("Alates", color = "black",
-                                size = 18, x = 0.06, y = -1.30, family = "Arial"),
+                                size = 18, x = 0.06, y = -1.30),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -1561,7 +1673,7 @@ r.squaredGLMM(lmer(ToBrood ~ Nest + Sex + Day + Corner + Ratio + (1 | Colony), d
 # High density treatment
 FidZone.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
                       filter(Colony < 11) %>% arrange(Nest), 
-                    aes(x = as.factor(Colony), y = SFZ),
+                    aes(x = Nest, y = SFZ),
                     position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
@@ -1571,20 +1683,20 @@ FidZone.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
   ylab(NULL) +
   ggtitle("High density") +
   theme_pubclean() +  
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
+  theme(axis.text = element_text(size = 18, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 0.5)
+  ylim(0, 0.4)
 
 # Low density treatment
 FidZone.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
                       filter(Colony > 10) %>% arrange(Nest), 
-                    aes(x = as.factor(Colony), y = SFZ),
+                    aes(x = Nest, y = SFZ),
                     position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
@@ -1594,29 +1706,25 @@ FidZone.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
-        legend.position = c(1.05, 0.725),
-        legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
-        legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
+        legend.position = "none") +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 0.5)
+  ylim(0, 0.4)
 
 #Compiling worker fidelity zone size plots
 FidZonePlot <- ggarrange(FidZone.1, FidZone.2,
                          labels = c("(a)", "(b)"),
                          label.x = 0.9,
-                         font.label = list(size = 18, family = "Arial", face = "plain"),
+                         font.label = list(size = 18, face = "plain"),
                          ncol = 2, nrow = 1,
                          common.legend = FALSE)
 
@@ -1625,7 +1733,7 @@ FidZonePlotFull <- annotate_figure(FidZonePlot,
                                    top = NULL,
                                    bottom = NULL,
                                    left = text_grob("Fidelity zone size", color = "black",
-                                                    size = 18, rot = 90, family = "Arial"),
+                                                    size = 18, rot = 90),
                                    right = NULL
 )
 
@@ -1634,7 +1742,7 @@ FidZonePlotFull <- annotate_figure(FidZonePlot,
 # High density treatment
 Occur.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
                     filter(Colony < 11) %>% arrange(Nest), 
-                  aes(x = as.factor(Colony), y = Occur),
+                  aes(x = Nest, y = Occur),
                   position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
@@ -1645,20 +1753,20 @@ Occur.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none",
         legend.key = element_blank()) +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 0.5)
+  ylim(0, 0.4)
 
 # Low density treatment
 Occur.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
                     filter(Colony > 10) %>% arrange(Nest), 
-                  aes(x = as.factor(Colony), y = Occur),
+                  aes(x = Nest, y = Occur),
                   position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
@@ -1668,22 +1776,22 @@ Occur.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, color = "white", family = "Arial"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 0.5)
+  ylim(0, 0.4)
 
 # Compiling worker occurrence zone size plots
 OccurZonePlot <- ggarrange(Occur.1, Occur.2,
                            labels = c("(c)", "(d)"),
                            label.x = 0.9,
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
@@ -1692,20 +1800,20 @@ OccurZonePlotFull <- annotate_figure(OccurZonePlot,
                                      top = NULL,
                                      bottom = NULL,
                                      left = text_grob("Occurrence zone size", color = "black",
-                                                      size = 18, rot = 90, family = "Arial"),
+                                                      size = 18, rot = 90),
                                      right = NULL
 )
 
 # Compile the spatial fidelity and occurrence zone plots
-FidOccurPlot<-ggarrange(FidZonePlotFull, OccurZonePlotFull,
+FidOccurPlot <- ggarrange(FidZonePlotFull, OccurZonePlotFull,
                             ncol = 1, nrow = 2,
                             common.legend = TRUE)
 
 # Annotate the compiled plots to include a common x-axis
 annotate_figure(FidOccurPlot,
                 top = NULL,
-                bottom = text_grob("Colony identification", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                bottom = text_grob("Nest shape", color = "black",
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
@@ -1738,190 +1846,7 @@ summary(lmer(Occur ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistSca
 #Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(Occur ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
 
-# SUPPLEMENTAL SFZ AREA PLOTS AND ANALYSES
-# SPATIAL FIDELITY ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
-# BOXPLOTS
-# High density treatment
-FidZoneArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
-                          filter(Colony < 11) %>% arrange(Nest), 
-                        aes(x = as.factor(Colony), y = SFZ_Area),
-                        position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65) + 
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("High density") +
-  theme_pubclean() +  
-  theme(axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
-        legend.position = "none") +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  ylim(0, 4)
-
-# Low density treatment
-FidZoneArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
-                          filter(Colony > 10) %>% arrange(Nest), 
-                        aes(x = as.factor(Colony), y = SFZ_Area),
-                        position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65) +  
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
-        legend.key = element_blank(),
-        legend.justification = c(1, -0.7),
-        legend.position = c(1.05, 0.725),
-        legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
-        legend.key.size = unit(1, 'cm')) +
-  guides(fill = guide_legend(title = "Nest", family = "Arial", color = "black")) +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  ylim(0, 4)
-
-# Compiling worker unscaled fidelity zone size plots
-FidZoneAreaPlot <- ggarrange(FidZoneArea.1, FidZoneArea.2,
-                         labels = c("(a)", "(b)"),
-                         label.x = 0.9,
-                         font.label = list(size = 18, family = "Arial", face = "plain"),
-                         ncol = 2, nrow = 1,
-                         common.legend = FALSE)
-
-# Annotating the compiled plots to include a common y-axis
-FidZoneAreaPlotFull <- annotate_figure(FidZoneAreaPlot,
-                                   top = NULL,
-                                   bottom = NULL,
-                                   left = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
-                                                    size = 18, rot = 90, family = "Arial"),
-                                   right = NULL
-)
-
-# OCCURRENCE ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
-# BOXPLOTS
-# High density treatment
-OccurArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                        filter(Colony < 11) %>% arrange(Nest), 
-                      aes(x = as.factor(Colony), y = Occur_Area),
-                      position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65) +  
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
-        legend.position = "none",
-        legend.key = element_blank()) +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  ylim(0, 5)
-
-#Low density treatment
-OccurArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                        filter(Colony > 10) %>% arrange(Nest), 
-                      aes(x = as.factor(Colony), y = Occur_Area),
-                      position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65) +
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, color = "white", family = "Arial"),
-        axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
-        legend.position = "none") +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  ylim(0, 5)
-
-# Compiling worker occurrence zone size plots
-OccurZoneAreaPlot <- ggarrange(OccurArea.1, OccurArea.2,
-                               labels = c("(c)", "(d)"),
-                               label.x = 0.9,
-                               font.label = list(size = 18, family = "Arial", face = "plain"),
-                               ncol = 2, nrow = 1,
-                               common.legend = FALSE)
-
-# Annotate the combined plots to include a common y-axis 
-OccurZoneAreaPlotFull <- annotate_figure(OccurZoneAreaPlot,
-                                         top = NULL,
-                                         bottom = NULL,
-                                         left = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
-                                                          size = 18, rot = 90, family = "Arial"),
-                                         right = NULL
-)
-
-# Compile the spatial fidelity and occurrence zone plots and include a common legend
-FidOccurAreaPlot<-ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
-                            ncol = 1, nrow = 2,
-                            common.legend = TRUE)
-
-# Annotate the compiled plots to include a common x-axis
-annotate_figure(FidOccurAreaPlot,
-                top = NULL,
-                bottom = text_grob("Colony identification", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
-                left = NULL,
-                right = NULL
-)
-
-# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (cm^2) and nest shape
-# RESPONSE VARIABLE
-# SFZ_Area - Worker spatial fidelity zone size (cm^2), zones have at least 3 observations 
-# FIXED EFFECTS 
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ_Area ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ_Area ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
-
-# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (cm^2) and nest shape
-# RESPONSE VARIABLE
-# Occur_Area - Worker spatial fidelity zone size (cm^2), 
-# FIXED EFFECTS 
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur_Area ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur_Area ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-#Function to create large points in a geom_point legend
+# Function to create large points in a geom_point legend
 large_points <- function(data, params, size) {
   # Multiply by some number, it doesn't matter what value, but larger numbers = large sized points in the legend
   data$size <- data$size * 2.5
@@ -1938,27 +1863,26 @@ large_points <- function(data, params, size) {
 # LINE PLOTS
 # High density treatment
 SFZDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "High") %>% arrange(Nest), 
-                   aes(x = MeanScaledDist, y=SFZ, 
+                   aes(x = MeanScaledDist, y = SFZ, 
                        linetype = Nest,
                        color = Nest, 
                        shape = Nest)) +
   geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.position = "none") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  ylim(0.05, 0.5) +
-  xlim(0, 0.75)
+  xlim(0, 1) +
+  ylim(0, 0.3)
 
 # Low density treatment
 SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -1967,22 +1891,21 @@ SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Densit
                      color = Nest,
                      shape = Nest)) +
   geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1, 0.71),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
@@ -1990,14 +1913,14 @@ SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Densit
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  ylim(0.05, 0.5) +
-  xlim(0, 0.75)
+  xlim(0, 1) +
+  ylim(0, 0.3)
 
 # Compiling worker fidelity zone size v. worker scaled distance to the nest entrance plots
 SFZDistPlot <- ggarrange(SFZDist1, SFZDist2,
                          labels = c("(a)", "(b)"),
                          label.x = 0.9,
-                         font.label = list(size = 18, family = "Arial", face = "plain"),
+                         font.label = list(size = 18, face = "plain"),
                          ncol = 2, nrow = 1,
                          common.legend = FALSE)
 
@@ -2006,7 +1929,7 @@ SFZFullDistPlot <- annotate_figure(SFZDistPlot,
                                    top = NULL,
                                    bottom = NULL,
                                    left = text_grob("Fidelity zone size", color = "black",
-                                                    size = 18, rot = 90, family = "Arial"),
+                                                    size = 18, rot = 90),
                                    right = NULL
 )
 
@@ -2025,18 +1948,17 @@ OccurDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  ylim(0.05, 0.5) +
-  xlim(0, 0.75)
-
+  xlim(0, 1) +
+  ylim(0, 0.4)
 
 #Low density treatment
 OccurDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2051,23 +1973,23 @@ OccurDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  ylim(0.05, 0.5) +
-  xlim(0, 0.75)
+  xlim(0, 1) +
+  ylim(0, 0.4)
 
 # Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
 OccurDistPlot <- ggarrange(OccurDist1, OccurDist2,
                            labels = c("(c)", "(d)"),
                            label.x = 0.9,
-                           font.label = list(size = 18, family = "Arial", face = "plain"),
+                           font.label = list(size = 18, face = "plain"),
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
@@ -2076,12 +1998,12 @@ OccurFullDistPlot <- annotate_figure(OccurDistPlot,
                                        top = NULL,
                                        bottom = NULL,
                                        left = text_grob("Occurrence zone size", color = "black",
-                                                        size = 18, rot = 90, family = "Arial"),
+                                                        size = 18, rot = 90),
                                        right = NULL
 )
 
 # Compile the spatial fidelity and occurrence zone v. worker scaled distance to the nest entrance plots and include a common legend
-FidOccurDistPlot<-ggarrange(SFZFullDistPlot, OccurFullDistPlot,
+FidOccurDistPlot <- ggarrange(SFZFullDistPlot, OccurFullDistPlot,
                                 ncol = 1, nrow = 2,
                             common.legend = TRUE)
 
@@ -2089,7 +2011,7 @@ FidOccurDistPlot<-ggarrange(SFZFullDistPlot, OccurFullDistPlot,
 annotate_figure(FidOccurDistPlot,
                 top = NULL,
                 bottom = text_grob("Average scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
@@ -2142,16 +2064,15 @@ SFZBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
   ylab(NULL) +
   ggtitle("High density") +
   geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -20),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
@@ -2159,8 +2080,8 @@ SFZBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  ylim(0.05, 0.4) +
-  xlim(0, 0.5)
+  xlim(0, 0.75) +
+  ylim(0, 0.3)
 
 # Low density treatment
 SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2172,17 +2093,16 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
   ylab(NULL) +
   ggtitle("Low density") +
   geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, family = "Arial", color = "black"),
-        axis.text.y = element_text(size = 18, family = "Arial", color = "white"),
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", hjust = 0.875, vjust = -10),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 18, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
@@ -2190,14 +2110,14 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == 
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  ylim(0.05, 0.4) +
-  xlim(0, 0.5)
+  xlim(0, 0.75) +
+  ylim(0, 0.3)
 
 # Compiling worker fidelity zone size v. worker scaled distance to the brood center plots and include a common legend
 SFZBroodDistPlot <- ggarrange(SFZBroodDist1, SFZBroodDist2,
                               labels = c("(a)", "(b)"),
                               label.x = 0.9,
-                              font.label = list(size = 18, family = "Arial", face = "plain"),
+                              font.label = list(size = 18, face = "plain"),
                               ncol = 2, nrow = 1,
                               common.legend = TRUE)
 
@@ -2206,7 +2126,7 @@ SFZFullBroodDistPlot <- annotate_figure(SFZBroodDistPlot,
                                         top = NULL,
                                         bottom = NULL,
                                         left = text_grob("Fidelity zone size", color = "black",
-                                                         size = 18, rot = 90, family = "Arial"),
+                                                         size = 18, rot = 90),
                                         right = NULL
 )
 
@@ -2223,9 +2143,9 @@ OccurBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   xlab(NULL) +
   ylab(NULL) +
@@ -2233,8 +2153,8 @@ OccurBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  ylim(0.1, 0.5) +
-  xlim(0, 0.5)
+  xlim(0, 0.75) +
+  ylim(0, 0.4)
 
 # Low density treatment
 OccurBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2249,22 +2169,22 @@ OccurBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, family = "Arial", color = "black"),
+        axis.text = element_text(size = 18, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", family = "Arial", color = "white", hjust = 0.75, vjust = -20),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  ylim(0.1, 0.5) +
-  xlim(0, 0.5)
+  xlim(0, 0.75) +
+  ylim(0, 0.4)
 
 # Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
 OccurBroodDistPlot <- ggarrange(OccurBroodDist1, OccurBroodDist2,
                                 labels = c("(c)", "(d)"),
                                 label.x = 0.9,
-                                font.label = list(size = 18, family = "Arial", face = "plain"),
+                                font.label = list(size = 18, face = "plain"),
                                 ncol = 2, nrow = 1,
                                 common.legend = FALSE)
 
@@ -2273,12 +2193,12 @@ OccurFullBroodDistPlot <- annotate_figure(OccurBroodDistPlot,
                                      top = NULL,
                                      bottom = NULL,
                                      left = text_grob("Occurrence zone size", color = "black",
-                                                      size = 18, rot = 90, family = "Arial"),
+                                                      size = 18, rot = 90),
                                      right = NULL
 )
 
 # Compile the spatial fidelity and occurrence zone v. worker scaled distance to the brood center plots and include a common legend
-FidOccurBroodDistPlot<-ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
+FidOccurBroodDistPlot <- ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
                             ncol = 1, nrow = 2,
                             common.legend = TRUE)
 
@@ -2286,7 +2206,7 @@ FidOccurBroodDistPlot<-ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
 annotate_figure(FidOccurBroodDistPlot,
                 top = NULL,
                 bottom = text_grob("Average scaled distance to brood center", color = "black",
-                                   size = 18, x = 0.525, family = "Arial"),
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
@@ -2346,12 +2266,12 @@ SmallRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Smal
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN") +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2377,12 +2297,12 @@ LargeRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Larg
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN") +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2410,12 +2330,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2440,12 +2360,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2477,12 +2397,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2496,7 +2416,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity, 
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2508,13 +2428,588 @@ DensityPlotColony <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(FullDensityPlot,
                 top = text_grob("Colony Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
 )
 
+####################################################################################################################
 # SUPPLEMENTARY PLOTS
+# SUPPLEMENTAL SFZ AREA PLOTS AND ANALYSES
+# SPATIAL FIDELITY ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
+####################################################################################################################
+
+# BOXPLOTS
+# High density treatment
+FidZoneArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
+                          filter(Colony < 11) %>% arrange(Nest), 
+                        aes(x = Nest, y = SFZ_Area),
+                        position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.65) + 
+  xlab(NULL) + 
+  ylab(NULL) +
+  ggtitle("High density") +
+  theme_pubclean() +  
+  theme(axis.text = element_text(size = 18, color = "black"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 3)
+
+# Low density treatment
+FidZoneArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>%
+                          filter(Colony > 10) %>% arrange(Nest), 
+                        aes(x = Nest, y = SFZ_Area),
+                        position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.65) +  
+  xlab(NULL) + 
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.position = "none") +
+  guides(fill = guide_legend(title = "Nest", color = "black")) +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 3)
+
+# Compiling worker unscaled fidelity zone size plots
+FidZoneAreaPlot <- ggarrange(FidZoneArea.1, FidZoneArea.2,
+                             labels = c("(a)", "(b)"),
+                             label.x = 0.9,
+                             font.label = list(size = 18, face = "plain"),
+                             ncol = 2, nrow = 1,
+                             common.legend = FALSE)
+
+# Annotating the compiled plots to include a common y-axis
+FidZoneAreaPlotFull <- annotate_figure(FidZoneAreaPlot,
+                                       top = NULL,
+                                       bottom = NULL,
+                                       left = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
+                                                        size = 18, rot = 90),
+                                       right = NULL
+)
+
+# OCCURRENCE ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
+# BOXPLOTS
+# High density treatment
+OccurArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                        filter(Colony < 11) %>% arrange(Nest), 
+                      aes(x = Nest, y = Occur_Area),
+                      position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.65) +  
+  xlab(NULL) + 
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none",
+        legend.key = element_blank()) +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 4)
+
+# Low density treatment
+OccurArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                        filter(Colony > 10) %>% arrange(Nest), 
+                      aes(x = Nest, y = Occur_Area),
+                      position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.65) +
+  xlab(NULL) + 
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 4)
+
+# Compiling worker occurrence zone size plots
+OccurZoneAreaPlot <- ggarrange(OccurArea.1, OccurArea.2,
+                               labels = c("(c)", "(d)"),
+                               label.x = 0.9,
+                               font.label = list(size = 18, face = "plain"),
+                               ncol = 2, nrow = 1,
+                               common.legend = FALSE)
+
+# Annotate the combined plots to include a common y-axis 
+OccurZoneAreaPlotFull <- annotate_figure(OccurZoneAreaPlot,
+                                         top = NULL,
+                                         bottom = NULL,
+                                         left = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
+                                                          size = 18, rot = 90),
+                                         right = NULL
+)
+
+# Compile the spatial fidelity and occurrence zone plots and include a common legend
+FidOccurAreaPlot <- ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
+                            ncol = 1, nrow = 2,
+                            common.legend = TRUE)
+
+# Annotate the compiled plots to include a common x-axis
+annotate_figure(FidOccurAreaPlot,
+                top = NULL,
+                bottom = text_grob("Nest shape", color = "black",
+                                   size = 18, x = 0.525),
+                left = NULL,
+                right = NULL
+)
+
+# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (cm^2) and nest shape
+# RESPONSE VARIABLE
+# SFZ_Area - Worker spatial fidelity zone size (cm^2), zones have at least 3 observations 
+# FIXED EFFECTS 
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(SFZ_Area ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(SFZ_Area ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
+
+# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (cm^2) and nest shape
+# RESPONSE VARIABLE
+# Occur_Area - Worker spatial fidelity zone size (cm^2), 
+# FIXED EFFECTS 
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(Occur_Area ~ Nest * Density + Colony + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(Occur_Area ~ Nest * Density + Colony + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+####################################################################################################################
+# SUPPLEMENTAL SFZ AREA PLOTS AND ANALYSES
+# SPATIAL FIDELITY ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
+# SCALED MEAN DISTANCE TO THE NEST ENTRANCE
+####################################################################################################################
+
+# FIDELITY ZONE SIZE AND DISTANCE TO THE NEST ENTRANCE
+# LINE PLOTS
+# High density treatment
+SFZDistArea1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "High") %>% arrange(Nest), 
+                   aes(x = MeanScaledDist, y = SFZ_Area, 
+                       linetype = Nest,
+                       color = Nest, 
+                       shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("High density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.position = "none") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  xlim(0, 1) +
+  ylim(0, 3) 
+
+# Low density treatment
+SFZDistArea2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorkingFid %>% filter(Density == "Low") %>% arrange(Nest),
+                   aes(x = MeanScaledDist, y = SFZ_Area, 
+                       linetype = Nest,
+                       color = Nest,
+                       shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  xlim(0, 1) +
+  ylim(0, 3) 
+
+# Compiling worker fidelity zone size v. worker scaled distance to the nest entrance plots
+SFZDistAreaPlot <- ggarrange(SFZDistArea1, SFZDistArea2,
+                         labels = c("(a)", "(b)"),
+                         label.x = 0.9,
+                         font.label = list(size = 18, face = "plain"),
+                         ncol = 2, nrow = 1,
+                         common.legend = FALSE)
+
+# Annotating the compiled plots to include a common y-axis
+SFZFullDistAreaPlot <- annotate_figure(SFZDistAreaPlot,
+                                   top = NULL,
+                                   bottom = NULL,
+                                   left = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
+                                                    size = 18, rot = 90),
+                                   right = NULL
+)
+
+# OCCURRENCE ZONE SIZE AND DISTANCE TO THE NEST ENTRANCE
+# LINE PLOTS
+# High density treatment
+OccurDistArea1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest),
+                     aes(x = MeanScaledDist, y = Occur_Area,
+                         linetype = Nest,
+                         color = Nest,
+                         shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("High density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none") +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  xlim(0, 1) +
+  ylim(0, 4) 
+
+
+#Low density treatment
+OccurDistArea2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
+                     aes(x = MeanScaledDist, y = Occur_Area,
+                         color = Nest, 
+                         linetype = Nest,
+                         shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = -20),
+        legend.position = "none") +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  xlim(0, 1) +
+  ylim(0, 4) 
+
+# Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
+OccurDistAreaPlot <- ggarrange(OccurDistArea1, OccurDistArea2,
+                           labels = c("(c)", "(d)"),
+                           label.x = 0.9,
+                           font.label = list(size = 18, face = "plain"),
+                           ncol = 2, nrow = 1,
+                           common.legend = FALSE)
+
+# Annotating the compiled plots to include a common y-axis
+OccurFullDistAreaPlot <- annotate_figure(OccurDistAreaPlot,
+                                     top = NULL,
+                                     bottom = NULL,
+                                     left = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
+                                                      size = 18, rot = 90),
+                                     right = NULL
+)
+
+# Compile the spatial fidelity and occurrence zone v. worker scaled distance to the nest entrance plots and include a common legend
+FidOccurDistAreaPlot <- ggarrange(SFZFullDistAreaPlot, OccurFullDistAreaPlot,
+                            ncol = 1, nrow = 2,
+                            common.legend = TRUE)
+
+# Annotate the compiled plots to include a common x-axis
+annotate_figure(FidOccurDistAreaPlot,
+                top = NULL,
+                bottom = text_grob("Average scaled distance to nest entrance", color = "black",
+                                   size = 18, x = 0.525),
+                left = NULL,
+                right = NULL
+)
+
+# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# SFZ - Worker spatial fidelity zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations and at least 15% of total observations
+# FIXED EFFECTS 
+# MeanScaledDist - each worker's average distance to the nest entrance (0 - 1, where 1 is the longest, shortest distance from the nest entrance)
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(SFZ_Area ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(SFZ_Area ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
+
+# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# SFZ - Worker spatial fidelity zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations 
+# FIXED EFFECTS 
+# MeanScaledDist - each worker's average distance to the nest entrance (0 - 1, where 1 is the longest, shortest distance from the nest entrance)
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(Occur_Area ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(Occur_Area ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+####################################################################################################################
+# SUPPLEMENTARY PLOTS
+# SPATIAL FIDELITY ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
+# SCALED MEAN DISTANCE TO THE BROOD CENTER
+####################################################################################################################
+
+# FIDELITY ZONE SIZE AND DISTANCE TO THE BROOD CENTER
+# LINE PLOTS
+# High density treatment
+SFZBroodDistArea1 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == "High") %>% arrange(Nest), 
+                        aes(x = MeanToBrood, y = SFZ_Area, 
+                            color = Nest,
+                            linetype = Nest,
+                            shape = Nest)) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("High density") +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  xlim(0, 1) +
+  ylim(0, 3) 
+
+# Low density treatment
+SFZBroodDistArea2 <- ggplot(data = BroodCentDistWorkersSFZFid %>% filter(Density == "Low") %>% arrange(Nest),
+                        aes(x = MeanToBrood, y = SFZ_Area, 
+                            color = Nest,
+                            linetype = Nest,
+                            shape = Nest)) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 18, color = "black"),
+        axis.text.y = element_text(size = 18, color = "white"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 18, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  xlim(0, 1) +
+  ylim(0, 3) 
+
+# Compiling worker fidelity zone size v. worker scaled distance to the brood center plots and include a common legend
+SFZBroodDistAreaPlot <- ggarrange(SFZBroodDistArea1, SFZBroodDistArea2,
+                              labels = c("(a)", "(b)"),
+                              label.x = 0.9,
+                              font.label = list(size = 18, face = "plain"),
+                              ncol = 2, nrow = 1,
+                              common.legend = TRUE)
+
+# Annotating the compiled plots to include a common y-axis
+SFZFullBroodDistAreaPlot <- annotate_figure(SFZBroodDistAreaPlot,
+                                        top = NULL,
+                                        bottom = NULL,
+                                        left = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
+                                                         size = 18, rot = 90),
+                                        right = NULL
+)
+
+# OCCURRENCE ZONE SIZE AND DISTANCE TO THE BROOD CENTER
+# LINE PLOTS
+# High density treatment
+OccurBroodDistArea1 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "High") %>% arrange(Nest),
+                          aes(x = MeanToBrood, y = Occur_Area,
+                              color = Nest,
+                              linetype = Nest,
+                              shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  ggtitle("High density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none") +
+  xlab(NULL) +
+  ylab(NULL) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  xlim(0, 1) +
+  ylim(0, 4) 
+
+# Low density treatment
+OccurBroodDistArea2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Low") %>% arrange(Nest),
+                          aes(x = MeanToBrood, y = Occur_Area, 
+                              color = Nest, 
+                              linetype = Nest,
+                              shape = Nest)) +
+  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 18, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  xlim(0, 1) +
+  ylim(0, 4) 
+
+
+# Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
+OccurBroodDistAreaPlot <- ggarrange(OccurBroodDistArea1, OccurBroodDistArea2,
+                                labels = c("(c)", "(d)"),
+                                label.x = 0.9,
+                                font.label = list(size = 18, face = "plain"),
+                                ncol = 2, nrow = 1,
+                                common.legend = FALSE)
+
+# Annotating the compiled plots to include a common y-axis
+OccurFullBroodDistAreaPlot <- annotate_figure(OccurBroodDistAreaPlot,
+                                          top = NULL,
+                                          bottom = NULL,
+                                          left = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
+                                                           size = 18, rot = 90),
+                                          right = NULL
+)
+
+# Compile the spatial fidelity and occurrence zone v. worker scaled distance to the brood center plots and include a common legend
+FidOccurBroodDistAreaPlot <- ggarrange(SFZFullBroodDistAreaPlot, OccurFullBroodDistAreaPlot,
+                                 ncol = 1, nrow = 2,
+                                 common.legend = TRUE)
+
+# Annotating the compiled plots to include a common x-axis
+annotate_figure(FidOccurBroodDistAreaPlot,
+                top = NULL,
+                bottom = text_grob("Average scaled distance to brood center", color = "black",
+                                   size = 18, x = 0.525),
+                left = NULL,
+                right = NULL
+)
+
+# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# SFZ - Worker spatial fidelity zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations and at least 15% of total observations
+# FIXED EFFECTS 
+# BroodDist - each worker's average distance to the brood center (0 - 1, where 1 is the longest, shortest distance from the nest entrance)
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(SFZ_Area ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZFid))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(SFZ_Area ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZFid))
+
+# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# Occur - Worker occurrence zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations 
+# FIXED EFFECTS 
+# BroodDist - each worker's average distance to the brood center (0 - 1, where 1 is the longest, shortest distance from the nest entrance)
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
+summary(lmer(Occur_Area ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(Occur_Area ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+
+####################################################################################################################
+# SUPPLEMENTARY PLOTS
+# SUPPLEMENTAL COLONY DENSITY PLOTS
+####################################################################################################################
+
 # HIGH NEST DENSITY
 # COLONY 1  
 # WORKERS
@@ -2530,12 +3025,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2561,12 +3056,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2579,7 +3074,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 1 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2591,7 +3086,7 @@ DensityPlotColony1 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony1,
                 top = text_grob("Colony 1 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -2611,12 +3106,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2641,12 +3136,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2659,7 +3154,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 2 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2671,7 +3166,7 @@ DensityPlotColony2 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony2,
                 top = text_grob("Colony 2 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -2691,12 +3186,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2721,12 +3216,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2739,7 +3234,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 3 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2751,7 +3246,7 @@ DensityPlotColony3 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony3,
                 top = text_grob("Colony 3 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -2771,12 +3266,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2801,12 +3296,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2820,7 +3315,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 4 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2832,7 +3327,7 @@ DensityPlotColony4 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony4,
                 top = text_grob("Colony 4 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -2852,12 +3347,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2882,12 +3377,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2900,7 +3395,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 5 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2912,7 +3407,7 @@ DensityPlotColony5 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony5,
                 top = text_grob("Colony 5 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -2932,12 +3427,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2962,12 +3457,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -2981,7 +3476,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 6 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -2993,7 +3488,7 @@ DensityPlotColony6 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony6,
                 top = text_grob("Colony 6 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3013,12 +3508,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3043,12 +3538,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3062,7 +3557,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 7 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3074,7 +3569,7 @@ DensityPlotColony7 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony7,
                 top = text_grob("Colony 7 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3094,12 +3589,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3124,12 +3619,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3143,7 +3638,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 8 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3155,7 +3650,7 @@ DensityPlotColony8 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony8,
                 top = text_grob("Colony 8 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3175,12 +3670,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3205,12 +3700,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3224,7 +3719,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 9 worker, brood & queen scatter plots with the high density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3236,7 +3731,7 @@ DensityPlotColony9 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony9,
                 top = text_grob("Colony 9 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3256,12 +3751,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3286,12 +3781,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3305,7 +3800,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 10 worker, brood & queen scatter plots with the low density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              SmallRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3317,7 +3812,7 @@ DensityPlotColony10 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony10,
                 top = text_grob("Colony 10 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3338,12 +3833,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3368,12 +3863,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3405,12 +3900,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3424,7 +3919,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity, 
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3436,7 +3931,7 @@ DensityPlotColony11 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(FullDensityPlot,
                 top = text_grob("Colony 11 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3456,12 +3951,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3486,12 +3981,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3523,12 +4018,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 12) %>% ad
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest, drop = F) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3542,7 +4037,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 12) %>% ad
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3554,7 +4049,7 @@ DensityPlotColony12 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(FullDensityPlot,
                 top = text_grob("Colony 12 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3574,12 +4069,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3604,12 +4099,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3641,12 +4136,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 13) %>% ad
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_grid(~ Nest, drop = FALSE) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3660,7 +4155,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 13) %>% ad
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3672,7 +4167,7 @@ DensityPlotColony13 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony13,
                 top = text_grob("Colony 13 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3692,12 +4187,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3722,12 +4217,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3759,12 +4254,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 14),
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3778,7 +4273,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 14),
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3790,7 +4285,7 @@ DensityPlotColony14 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony14,
                 top = text_grob("Colony 14 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3810,12 +4305,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3840,12 +4335,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3877,12 +4372,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 15) %>% ad
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest, drop = F) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3896,7 +4391,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 15) %>% ad
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3908,7 +4403,7 @@ DensityPlotColony15 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony15,
                 top = text_grob("Colony 15 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -3928,12 +4423,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3958,12 +4453,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -3977,7 +4472,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 16 worker, brood & queen scatter plots with the low density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -3989,7 +4484,7 @@ DensityPlotColony16 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony16,
                 top = text_grob("Colony 16 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -4009,12 +4504,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4039,12 +4534,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4058,7 +4553,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 17 worker, brood & queen scatter plots with the low density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -4070,7 +4565,7 @@ DensityPlotColony17 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony17,
                 top = text_grob("Colony 17 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -4090,12 +4585,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4120,12 +4615,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4157,12 +4652,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 18) %>% ad
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4176,7 +4671,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 18) %>% ad
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -4188,7 +4683,7 @@ DensityPlotColony18 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony18,
                 top = text_grob("Colony 18 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -4208,12 +4703,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4238,12 +4733,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4275,12 +4770,12 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 19) %>% ad
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   facet_wrap(~ Nest) +
   labs(color = "KNN")+
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4294,7 +4789,7 @@ AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 19) %>% ad
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              AlateDensity,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -4306,7 +4801,7 @@ DensityPlotColony19 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(FullDensityPlot,
                 top = text_grob("Colony 19 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL
@@ -4326,12 +4821,12 @@ WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony =
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN") +
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4356,12 +4851,12 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
   theme(axis.text = element_blank(),
         axis.title = element_blank(),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, family = "Arial", color = "black"),
-        legend.title = element_text(size = 20, family = "Arial", color = "black"),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.position = "bottom",
         strip.background = element_blank(),
         strip.text = element_blank(),
-        plot.title = element_text(size = 18, family = "Arial", color = "black", vjust = -6.75, hjust = 0.01)) +
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
   labs(color = "KNN")+
   facet_wrap(~ Nest) +
   guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
@@ -4375,7 +4870,7 @@ BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colon
 # Compiling the colony 20 worker, brood & queen scatter plots with the low density simulation scatter plot
 FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
                              LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain", family = "Arial"),
+                             font.label = list(size = 18, face = "plain"),
                              ncol = 2, nrow = 2,
                              widths = 0.05,
                              vjust = 1.85,
@@ -4387,7 +4882,7 @@ DensityPlotColony20 <- FullDensityPlot
 # Annotating the compiled plot and include a title
 annotate_figure(DensityPlotColony20,
                 top = text_grob("Colony 20 Member Densities", color = "black",
-                                size = 18, x = 0.2, family = "Arial"),
+                                size = 18, x = 0.2),
                 bottom = NULL,
                 left = NULL,
                 right = NULL

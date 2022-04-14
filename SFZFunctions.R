@@ -1,7 +1,7 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: FEB 2022
-## email: gchism@email.arizona.edu
+## Date: APR 2022
+## email: gchism@arizona.edu
 ## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Site fidelity zone assignment, calculations, and distance functions
 ####################################################################################################################
@@ -17,7 +17,7 @@
 ####################################################################################################################
 
 # COLOR REFRENCE DATA SET
-ColorRefFull <- read.csv(ColorRefFull, "ColorRefFull.csv")
+ColorRefFull <- read.csv("ColorRefFull.csv")
 
 # DISTANCE TO NEST ENTRANCE (EMPIRICAL) REFERENCES
 DistBinsFull <- read.csv("DistBinsFull.csv")
@@ -27,26 +27,6 @@ NestAreaFull <- read.csv("NestAreaFull.csv")
 
 # SCALING REFERENCE DATA SET FOR CIRCLE NESTS (BASICALLY COLONY SIZE)
 ScalingCircleSFZ <- read.csv("ScalingCircleSFZ.csv")
-
-# WORKERS
-# High nest density
-FullDataCoordWorkers <- read.csv("FullDataCoordWorkers.csv")
-
-# Low nest density
-FullDataCoordWorkersRD2 <- read.csv("FullDataCoordWorkersRD2.csv")
-
-# Combine data sets for workers
-FullDataCoordWorkersRD1_RD2 <- full_join(FullDataCoordWorkers, FullDataCoordWorkersRD2)
-
-# BROOD
-# High nest density
-FullDataCoordBrood <- read.csv("FullDataCoordBrood.csv")
-
-# Low nest density
-FullDataCoordBroodRD2 <- read.csv("FullDataCoordBroodRD2.csv")
-
-# Combined data set
-FullDataCoordBroodRD1_RD2 <- full_join(FullDataCoordBrood, FullDataCoordBroodRD2)
 
 ####################################################################################################################
 # CORRECTING COLOR COORDINATES
@@ -110,7 +90,7 @@ ColorCoords <- function(data.table){
     # Filtering out rows with more than one "X", or missing color
     filter(XCount != 1) %>%
     # Selecting the desired columns 
-    select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID, Zone) %>%
+    select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID) %>%
     distinct()
 }
 
@@ -5271,7 +5251,7 @@ SFZDataFullZones <-
 
 FidelityZones <- function(data_table){
   # Joining the area reference data set
-  FidelityZonesDataRD1_RD2 <<- left_join(data_table, NestAreaFull) %>%
+  FidelityZonesDataRaw <<- left_join(data_table, NestAreaFull) %>%
     # Creating a column filled with 1s
     mutate(ColorIDNum = 1) %>%
     # Group by the Colony, Nest, Day, and ColorID columns
@@ -5283,19 +5263,18 @@ FidelityZones <- function(data_table){
     filter(count == 1) %>%
     # Group by the Colony, Nest, and ColorID columns
     group_by(Colony, Nest, ColorID) %>%
-    # Finding the freauency of the color ID in each group
-    mutate(Freq = sum(ColorIDNum),
-           #Count the number of observations in each group
-           count = n()) %>%
-    #Removing all color IDs with fewer than three observations
+    # Finding the frequency of the color ID in each group
+    mutate(Freq = sum(ColorIDNum)) %>%
+    # Removing all color IDs with fewer than three observations
     filter(Freq > 2) %>%
     # Group by the Colony, Nest, ColorID, and Zone columns
     group_by(Colony, Nest, ColorID, Zone) %>%
     # Count the number of observations in each group
     mutate(ZoneCount = n(),
            # Calculating the proportion of color ID observations in each observed zone 
-           PropSFZ = (ZoneCount / (count))) %>%
-    # Remove any duplicates
+           PropSFZ = (ZoneCount / (Freq))) %>%
+    select(-c(Day, ScaledX, ScaledY)) %>%
+    # Remove any duplicates - i.e., days 2 and 10 can have two observations in zone 5, so there will be duplicate values of PropSFZ
     distinct() %>%
     # Determining whether the zone has at least 15% of total observations or not
     # If so, the zone will be included in fidelity zone
@@ -5309,7 +5288,12 @@ FidelityZones <- function(data_table){
            SFZ_Area = ((Area / 24) * sum(FidZone)), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, ColorID, SFZ, Occur, SFZ_Area, Occur_Area, ScaledX, ScaledY, Density, Day, Bin)
+    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq)
+  
+  # Final data set
+  FidelityZonesDataRD1_RD2 <<- left_join(data_table, FidelityZonesDataRaw) %>%
+    distinct() %>%
+    drop_na()
 }
 
 # Running the site fidelity calculation function on the SFZDataFullZones data set
@@ -5449,25 +5433,25 @@ DistanceCoordsFunctionSFZ<-function(data.table){
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
   
-  #Has all distances and zones
+  # Has all distances and zones
   WorkerDistScaledRD1_RD2SFZFull <<- full_join(DistBinsTube, DistBinsCircle) %>%
-    #Group by the columns Colony, Nest and ColorID
+    # Group by the columns Colony, Nest and ColorID
     group_by(Colony, Nest, Day, ColorID) %>%
-    #Finding the mean distance of workers within the groupings
+    # Finding the mean distance of workers within the groupings
     mutate(ScaledDist = DistanceTotal / (MaxDist),
            ScaledDist = ifelse(ScaledDist > 1, 1, ScaledDist))%>%
     ungroup()%>%
-    select(Colony, Nest, ColorID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area) %>%
+    select(Colony, Nest, ColorID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area, Freq) %>%
     distinct()
 
-  #Contains all mean distances
+  # Contains all mean distances
   WorkerDistScaledRD1_RD2SFZWorking <<- WorkerDistScaledRD1_RD2SFZFull %>%
     group_by(Colony, Nest, ColorID) %>%
     mutate(MeanScaledDist = mean(ScaledDist)) %>%
-    select(Colony, Nest, ColorID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area)%>%
+    select(Colony, Nest, ColorID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area, Freq)%>%
     distinct()
   
-  #Contains the mean distances, but has only spatial fidelity zones > 0
+  # Contains the mean distances, but has only spatial fidelity zones > 0
   WorkerDistScaledRD1_RD2SFZWorkingFid <<- WorkerDistScaledRD1_RD2SFZWorking %>%
     filter(SFZ > 0) 
 }
@@ -5574,6 +5558,7 @@ MeanBroodCoordFull <- left_join(MeanBroodCoordProps, FullDataCoordBroodRD1_RD2) 
 # Reference distances are the shortest distances between nest sections
 ####################################################################################################################
 
+
 # First we make data sets of distance segments either between a bin and the entrance or between two sections
 # This is done outside of the actual function below to take less computing time
 TubeDistances <- DistBinsFull %>% # Filtering out the Tube reference distances
@@ -5582,10 +5567,8 @@ TubeDistances <- DistBinsFull %>% # Filtering out the Tube reference distances
 # Filtering out only distances for bin 1
 DistBin1 <- TubeDistances %>% 
   filter(Bin == 1) %>%
-  mutate(BinX = 3.75, # Create x reference column
-         BinY = 0, # Create y reference column
-         Dist1 = Distance) %>% # Set reference distance
-  select(Colony, Nest ,Dist1) # Select desired columns
+  mutate(Dist1 = Distance) %>% # Set reference distance
+  select(Colony, Nest, Dist1) # Select desired columns
 
 # Filtering and creating reference distances for bins 2 - 8
 # Bin 2
@@ -5639,18 +5622,27 @@ DistBin1_8Full <- full_join(DistBin1, DistBin2) %>%
   full_join(DistBin7) %>%
   full_join(DistBin8) %>%
   mutate(
-    Distance7_0 = Dist7, # Distance from bin 7 to 0
-    Distance3_0 = Dist3, # Distance from bin 4 to 0 
-    Distance8_7 = abs(Dist8 - Dist7), # Distance from bin 8 to 6 or 4 to 2 or 4 to 5  
-    Distance8_1 = abs(Dist8 - Dist1), # Distance from bin 8 to 1
-    Distance7_1 = abs(Dist7 - Dist1), # Distance from bin 7 to 1
-    Distance3_1 = abs(Dist3 - Dist1), # Distance from bin 4 to 1
-    Distance2_1 = abs(Dist2 - Dist1), # Distance from bin 3 to 1
-    Distance8_2 = abs(Dist8 - Dist2), # Distance from bin 8 to 2
-    Distance7_2 = abs(Dist7 - Dist2), # Distance from bin 7 to 2
-    Distance7_3 = abs(Dist7 - Dist3), # Distance from bin 7 to 3
-    Distance8_4 = abs(Dist8 - Dist3), # Distance from bin 8 to 4
-    Distance7_4 = abs(Dist7 - Dist3 - Distance8_7) # Distance from bin 7 to 4
+    Distance8_6 = abs(Dist8 - Dist7), # Distance from bin 8 to 6
+    Distance4_2 = Distance8_6, # Distance from bin 4 to 2
+    Distance3_5 = Distance8_6, # Distance from bin 3 to 5
+    Distance7_5 = Distance8_6, # Distance from bin 7 to 5 
+    Distance8_1 = abs(Dist8 - Dist2), # Distance from bin 8 to 1
+    Distance7_1 = abs(Dist7 - Dist2), # Distance from bin 7 to 1
+    Distance4_1 = abs(Dist4 - Dist2), # Distance from bin 4 to 1
+    Distance3_1 = abs(Dist3 - Dist2), # Distance from bin 3 to 1
+    Distance8_2 = abs(Dist8 - Dist3), # Distance from bin 8 to 2
+    Distance7_2 = abs(Dist7 - Dist3), # Distance from bin 7 to 2
+    Distance7_3 = abs(Dist7 - Dist4), # Distance from bin 7 to 3
+    Distance8_3 = abs(Dist8 - Dist4), # Distance from bin 8 to 3
+    Distance5_1 = abs(Distance4_1 + Distance8_6), # Distance from bin 5 to 1 
+    Distance6_1 = abs(Distance7_1 - Distance8_6), # Distance from bin 6 to 1
+    Distance5_6 = abs(Distance6_1 - Distance5_1), # Distance from bin 5 to 6 
+    Distance7_4 = abs(Distance7_3 - Distance8_6), # Distance from bin 7 to 4
+    Distance2_5 = abs(Distance8_6 * 2), # Distance from bin 2 to 5
+    Distance2_6 = abs(Distance2_5 + Distance5_6), # Distance from bin 2 to 6
+    Distance3_6 = abs(Distance8_6 + Distance5_6), # Distance from bin 3 to 6 
+    Distance8_4 = abs(Distance8_3 - Distance8_6), # Distance from bin 8 to 4
+    Distance8_5 = abs(Distance8_4 - Distance5_6), # Distance from bin 8 to 5
   )
 
 # Function that uses the data sets of individual or simulation distances to the entrance
@@ -5725,313 +5717,323 @@ MeanBroodCoordFullCircle <- MeanBroodCoordFull %>%
 ####################################################################################################################
 
 DistanceToBroodSFZFunction <- function(data.table){
-# Create the alternative bin 4 reference y coordinate
-Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
-  filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
-  group_by(Colony) %>% 
-  mutate(BinY4 = BinY,
-         Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
-  select(Colony, BinY4 ,Distance4)
-
-# TUBE NEST
-DistanceToBroodSFZTube <- data.table %>% # Full worker data set
-  filter(Nest == "Tube") %>% # Filter out tube nest shape
-  left_join(MeanBroodCoordFullTube) %>% # Join the tube nest brood centroid data set
-  left_join(DistBin1_8Full) %>% # Join the tube nest reference distance data set
-  left_join(Bin4) %>%
-  drop_na() %>% # Drop any NAs
-  group_by(Colony, Day) %>% # Group by the Colony and Day columns
-  # Creating columns of reference distances from both the created distances and reference coordinates above 
-  mutate(Distance3_4 = abs(BinXRef3 - BinXRef4_6), # Shortest distance from bins 3 to 4
-         # Creating the x and y distances from each individual to all Bin x and y references
-         # Distances from the individual to the occupied Bins edge towards the nest entrance
-         DistanceX = ScaledX - BinX, # Distance from each individual's x coordinate to the x reference bin coordinate
-         DistanceY = ScaledY - BinY, # Distance from each individual's y coordinate to the y reference bin coordinate
-         DistanceY4 = ScaledY - BinY4, # Distance from each individual's y coordinate to the y reference bin 4 coordinate
-         # Calculating the shortest distance from each individual to each nest section
-         # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
-         # A set of shortest distances are calculated for Bins towards and away from the nest entrance from the reference of each individual
-         # Shortest distances from each individual to bins towards the nest entrance
-         # If the individual is in bin 4 but to the left of the x reference, use the first formula, else use the second
-         # This is only done for nest sections towards the entrance, the rest are done using reference coordinates
-         PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
-                             sqrt((DistanceX^2) + (DistanceY4^2)),
-                             sqrt((DistanceX^2) + (DistanceY^2))),
-         # Calculating the distance of each individual to the brood center
-         # If the individual and brood centroid can be connected with a straight line, then this is done with the Pythagorean theorem 
-         # If they aren't, the shortest distance to the bin closest to each other is calculated for each, than a reference distance is added where needed
-         BroodDist = 
-           # Distances from workers to brood centroids in bin 1
-           ifelse(BroodBin == 1,
-                  # Bin 1
-                  ifelse(Bin == 1, sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                         # Bin 2
-                         ifelse(Bin == 2, 
-                                ifelse(BroodY > BinYRef2, 
-                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                       PythagDist + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
-                                ifelse(Bin == 3, 
-                                       ifelse(ScaledY < BinYRef3,
-                                              ifelse(BroodY > BinYRef2, 
-                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                     sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
-                                              ifelse(BroodY > BinYRef2,
-                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance2_1)),
-                                       ifelse(Bin == 4,
-                                              ifelse(ScaledX < BinXRef4_6,
-                                                     ifelse(BroodY > BinYRef2,
-                                                            PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                            PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
-                                                     ifelse(BroodY > BinYRef2,
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1)),
-                                              # Bin 5
-                                              ifelse(Bin == 5,
-                                                     ifelse(BroodY > BinYRef2,
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
-                                                     # Bin 6
-                                                     ifelse(Bin == 6,
-                                                            ifelse(BroodY > BinYRef2,
-                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
-                                                            # Bin 7
-                                                            ifelse(Bin == 7,
-                                                                   ifelse(ScaledY > BinYRef7,
-                                                                          ifelse(BroodY > BinYRef2,
-                                                                                 PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                 PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
-                                                                          ifelse(BroodY > BinYRef2,
-                                                                                 PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                 PythagDist + Distance7_1 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)))),
-                                                                   # Bin 8
-                                                                   ifelse(Bin == 8,
-                                                                          ifelse(BroodY > BinYRef2,
-                                                                                 PythagDist + Distance8_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                 PythagDist + Distance8_2 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2))),
-                                                                          NA)
-                                                            ))))))),
-                  # Distances from workers to brood centroids in bin 2
-                  ifelse(BroodBin == 2,
-                         # Bin 1
-                         ifelse(Bin == 1, 
-                                ifelse(ScaledY > BinYRef2,
-                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
-                                # Bin 2
-                                ifelse(Bin == 2,
-                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                       # Bin 3
-                                       ifelse(Bin == 3,
-                                              ifelse(ScaledY < BinYRef3,
-                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2))),
-                                              # Bin 4
-                                              ifelse(Bin == 4,
-                                                     ifelse(ScaledX < BinXRef4_6,
-                                                            PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
-                                                     # Bin 5
-                                                     ifelse(Bin == 5,
-                                                            PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                            # Bin 6
-                                                            ifelse(Bin == 6,
-                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                   # Bin 7
-                                                                   ifelse(Bin == 7,
-                                                                          ifelse(ScaledY > BinYRef7,
-                                                                                 PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                 PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
-                                                                          # Bin 8
-                                                                          ifelse(Bin == 8,
-                                                                                 PythagDist + Distance8_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                 NA)))))))),
-                         # Distances from workers to brood centroids in bin 3
-                         ifelse(BroodBin == 3,
-                                # Bin 1
-                                ifelse(Bin == 1,
-                                       ifelse(BroodY < BinYRef3,
-                                              ifelse(ScaledY > BinYRef2,
-                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                     sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
-                                              ifelse(ScaledY > BinYRef2,
-                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                     sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1)),
-                                       # Bin 2
-                                       ifelse(Bin == 2,
-                                              ifelse(BroodY < BinYRef3,
-                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2))),
-                                              # Bin 3
-                                              ifelse(Bin == 3,
-                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                     # Bin 4
-                                                     ifelse(Bin == 4,
-                                                            ifelse(ScaledX < BinXRef4_6,
-                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                   PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2))),
-                                                            # Bin 5
-                                                            ifelse(Bin == 5,
-                                                                   PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
-                                                                   # Bin 6
-                                                                   ifelse(Bin == 6,
-                                                                          PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
-                                                                          # Bin 7
-                                                                          ifelse(Bin == 7,
-                                                                                 ifelse(ScaledY > BinYRef7,
-                                                                                        PythagDist + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
-                                                                                        PythagDist + Distance7_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
-                                                                                 ifelse(Bin == 8,
-                                                                                        PythagDist + Distance8_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
-                                                                                        NA)))))))),
-                                # Distances from workers to brood centroids in bin 4
-                                ifelse(BroodBin == 4,
-                                       # Bin 1
-                                       ifelse(Bin == 1,
-                                              ifelse(BroodX < BinXRef4_6,
-                                                     ifelse(ScaledY > BinYRef2, 
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                            sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1),
-                                                     ifelse(ScaledY > BinYRef2,
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
-                                                            sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1)),
-                                              # Bin 2
-                                              ifelse(Bin == 2,
-                                                     ifelse(BroodX < BinXRef4_6,
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4),
-                                                     # Bin 3
-                                                     ifelse(Bin == 3,
-                                                            ifelse(BroodX < BinXRef4_6,
-                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                   sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2))),
-                                                            # Bin 4
-                                                            ifelse(Bin == 4,
-                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                   # Bin 5
-                                                                   ifelse(Bin == 5,
-                                                                          sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                          # Bin 6
-                                                                          ifelse(Bin == 6,
-                                                                                 sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                 # Bin 7
-                                                                                 ifelse(Bin == 7,
-                                                                                        ifelse(ScaledY > BinYRef7,
-                                                                                               sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                               PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
-                                                                                        # Bin 8
-                                                                                        ifelse(Bin == 8,
-                                                                                               PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
-                                                                                               NA)))))))),
-                                       # Distances from workers to brood centroids in bin 5
-                                       ifelse(BroodBin == 5,
-                                              # Bin 1
-                                              ifelse(Bin == 1,
-                                                     ifelse(ScaledY > BinYRef2,
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
-                                                            sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1),
-                                                     # Bin 2
-                                                     ifelse(Bin == 2,
-                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
-                                                            # Bin 3
-                                                            ifelse(Bin == 3,
-                                                                   sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
-                                                                   # Bin 4
-                                                                   ifelse(Bin == 4,
-                                                                          sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                          # Bin 5
-                                                                          ifelse(Bin == 5,
-                                                                                 sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                 # Bin 6
-                                                                                 ifelse(Bin == 6,
-                                                                                        sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                        # Bin 7
-                                                                                        ifelse(Bin == 7,
-                                                                                               ifelse(ScaledY > BinYRef7,
-                                                                                                      sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                                      PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
-                                                                                               # Bin 8
-                                                                                               ifelse(Bin == 8,
-                                                                                                      PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
-                                                                                                      NA)))))))),
-                                              # Distances from workers to brood centroids in bin 6
-                                              ifelse(BroodBin == 6,
-                                                     # Bin 1
-                                                     ifelse(Bin == 1,
-                                                            ifelse(ScaledY > BinYRef2,
-                                                                   sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
-                                                                   sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1),
-                                                            # Bin 2
-                                                            ifelse(Bin == 2,
-                                                                   sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
-                                                                   # Bin 3
-                                                                   ifelse(Bin == 3,
-                                                                          sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
-                                                                          # Bin 4
-                                                                          ifelse(Bin == 4,
-                                                                                 sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                 # Bin 5
-                                                                                 ifelse(Bin == 5,
-                                                                                        sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                        # Bin 6
-                                                                                        ifelse(Bin == 6,
-                                                                                               sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                               # Bin 7
-                                                                                               ifelse(Bin == 7,
-                                                                                                      ifelse(ScaledY > BinYRef7,
-                                                                                                             sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                                             PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
-                                                                                                      # Bin 8
-                                                                                                      ifelse(Bin == 8,
-                                                                                                             PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
-                                                                                                             NA)))))))),
-                                                     # Distances from workers to brood centroids in bin 8, note that there weren't any brood centroids in bin 7, so it is skipped here
-                                                     ifelse(BroodBin == 8,
-                                                            # Bin 1
-                                                            ifelse(Bin == 1,
-                                                                   ifelse(ScaledY > BinYRef2,
-                                                                          sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_2,
-                                                                          sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_1),
-                                                                   # Bin 2
-                                                                   ifelse(Bin == 2,
-                                                                          sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_2,
-                                                                          # Bin 3
-                                                                          ifelse(Bin == 3,
-                                                                                 sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_4,
-                                                                                 # Bin 4
-                                                                                 ifelse(Bin == 4,
-                                                                                        sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                        # Bin 5
-                                                                                        ifelse(Bin == 5,
-                                                                                               sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                               # Bin 6
-                                                                                               ifelse(Bin == 6,
-                                                                                                      sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                                      # Bin 7
-                                                                                                      ifelse(Bin == 7,
-                                                                                                             ifelse(ScaledY < BinYRef8,
-                                                                                                                    sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                                                    sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2))),
-                                                                                                             # Bin 8
-                                                                                                             ifelse(Bin == 8,
-                                                                                                                    sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
-                                                                                                                    NA)
-                                                                                                      )
-                                                                                               )
-                                                                                        )
-                                                                                 )
-                                                                          )
-                                                                   )
-                                                            ),
-                                                            NA
-                                                     )))))))) %>%
-  group_by(Colony) %>% # Group by the colony column
-  mutate(ToBrood = BroodDist / MaxDist, # Scale the shortest distance from each individual to the brood center
-         ToBrood = ifelse(ToBrood > 1, 1, ToBrood)) %>% # As a precaution, if any scaled distances are greater than 1, the value is converted to 1
-  select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, ColorID, SFZ, Occur) %>% # Select desired columns
-  distinct() %>% # Remove any duplicates (shouldn't exist)
-  drop_na() # Remove NAs
+  # Create the alternative bin 4 reference y coordinate
+  Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
+    filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
+    group_by(Colony) %>% 
+    mutate(BinY4 = BinY,
+           Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
+    select(Colony, BinY4, Distance4)
+  
+  Bin7 <- DistBinsFull %>%
+    filter(Nest == "Tube" & Bin == 4) %>%
+    group_by(Colony) %>%
+    mutate(BinX7 = BinX) %>%
+    select(Colony, BinX7)
+  
+  # TUBE NEST
+  DistanceToBroodSFZTube <- data.table %>% # Full worker data set
+    filter(Nest == "Tube") %>% # Filter out tube nest shape
+    left_join(MeanBroodCoordFullTube) %>% # Join the tube nest brood centroid data set
+    left_join(DistBin1_8Full) %>% # Join the tube nest reference distance data set
+    left_join(Bin4) %>%
+    left_join(Bin7) %>%
+    drop_na() %>% # Drop any NAs
+    group_by(Colony, Day) %>% # Group by the Colony and Day columns
+    # Creating columns of reference distances from both the created distances and reference coordinates above 
+    mutate(Distance3_4 = abs(BinXRef3 - BinXRef4_6), # Shortest distance from bins 3 to 4
+           # Creating the x and y distances from each individual to all Bin x and y references
+           # Distances from the individual to the occupied Bins edge towards the nest entrance
+           DistanceX = ScaledX - BinX, # Distance from each individual's x coordinate to the x reference bin coordinate
+           DistanceY = ScaledY - BinY, # Distance from each individual's y coordinate to the y reference bin coordinate
+           DistanceY4 = ScaledY - BinY4, # Distance from each individual's y coordinate to the y reference bin 4 coordinate
+           DistanceX7 = ScaledX - BinX7, # Distance from each worker x coordinate to the second bin 6 and 7 x coordinate creating a direct path to bin 4 
+           # Calculating the shortest distance from each individual to each nest section
+           # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
+           # A set of shortest distances are calculated for Bins towards and away from the nest entrance from the reference of each individual
+           # Shortest distances from each individual to bins towards the nest entrance
+           # If the individual is in bin 4 but to the left of the x reference, use the first formula, else use the second
+           # This is only done for nest sections towards the entrance, the rest are done using reference coordinates
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
+                               sqrt((DistanceX^2) + (DistanceY4^2)),
+                               sqrt((DistanceX^2) + (DistanceY^2))),
+           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
+           # Calculating the distance of each individual to the brood center
+           # If the individual and brood centroid can be connected with a straight line, then this is done with the Pythagorean theorem 
+           # If they aren't, the shortest distance to the bin closest to each other is calculated for each, than a reference distance is added where needed
+           BroodDist = 
+             # Distances from workers to brood centroids in bin 1
+             ifelse(BroodBin == 1,
+                    # Bin 1
+                    ifelse(Bin == 1, sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                           # Bin 2
+                           ifelse(Bin == 2, 
+                                  ifelse(BroodY > BinYRef2, 
+                                         sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                         PythagDist + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
+                                  ifelse(Bin == 3, 
+                                         ifelse(ScaledY < BinYRef3,
+                                                ifelse(BroodY > BinYRef2, 
+                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
+                                                ifelse(BroodY > BinYRef2,
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance3_1)),
+                                         ifelse(Bin == 4,
+                                                ifelse(ScaledX < BinXRef4_6,
+                                                       ifelse(BroodY > BinYRef2,
+                                                              PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
+                                                       ifelse(BroodY > BinYRef2,
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1)),
+                                                # Bin 5
+                                                ifelse(Bin == 5,
+                                                       ifelse(BroodY > BinYRef2,
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
+                                                       # Bin 6
+                                                       ifelse(Bin == 6,
+                                                              ifelse(BroodY > BinYRef2,
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
+                                                              # Bin 7
+                                                              ifelse(Bin == 7,
+                                                                     ifelse(ScaledY > BinYRef7,
+                                                                            ifelse(BroodY > BinYRef2,
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
+                                                                            ifelse(BroodY > BinYRef2,
+                                                                                   PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist + Distance7_1 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)))),
+                                                                     # Bin 8
+                                                                     ifelse(Bin == 8,
+                                                                            ifelse(BroodY > BinYRef2,
+                                                                                   PythagDist + Distance8_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist + Distance8_2 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2))),
+                                                                            NA)
+                                                              ))))))),
+                    # Distances from workers to brood centroids in bin 2
+                    ifelse(BroodBin == 2,
+                           # Bin 1
+                           ifelse(Bin == 1, 
+                                  ifelse(ScaledY > BinYRef2,
+                                         sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                         sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
+                                  # Bin 2
+                                  ifelse(Bin == 2,
+                                         sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                         # Bin 3
+                                         ifelse(Bin == 3,
+                                                ifelse(ScaledY < BinYRef3,
+                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2))),
+                                                # Bin 4
+                                                ifelse(Bin == 4,
+                                                       ifelse(ScaledX < BinXRef4_6,
+                                                              PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
+                                                       # Bin 5
+                                                       ifelse(Bin == 5,
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                              # Bin 6
+                                                              ifelse(Bin == 6,
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                     # Bin 7
+                                                                     ifelse(Bin == 7,
+                                                                            ifelse(ScaledY > BinYRef7,
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
+                                                                            # Bin 8
+                                                                            ifelse(Bin == 8,
+                                                                                   PythagDist + Distance8_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   NA)))))))),
+                           # Distances from workers to brood centroids in bin 3
+                           ifelse(BroodBin == 3,
+                                  # Bin 1
+                                  ifelse(Bin == 1,
+                                         ifelse(BroodY < BinYRef3,
+                                                ifelse(ScaledY > BinYRef2,
+                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
+                                                ifelse(ScaledY > BinYRef2,
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1)),
+                                         # Bin 2
+                                         ifelse(Bin == 2,
+                                                ifelse(BroodY < BinYRef3,
+                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2))),
+                                                # Bin 3
+                                                ifelse(Bin == 3,
+                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                       # Bin 4
+                                                       ifelse(Bin == 4,
+                                                              ifelse(ScaledX < BinXRef4_6,
+                                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                     PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2))),
+                                                              # Bin 5
+                                                              ifelse(Bin == 5,
+                                                                     PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
+                                                                     # Bin 6
+                                                                     ifelse(Bin == 6,
+                                                                            PythagDist + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
+                                                                            # Bin 7
+                                                                            ifelse(Bin == 7,
+                                                                                   ifelse(ScaledY > BinYRef7,
+                                                                                          PythagDist4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance7_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
+                                                                                   ifelse(Bin == 8,
+                                                                                          PythagDist + Distance8_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          NA)))))))),
+                                  # Distances from workers to brood centroids in bin 4
+                                  ifelse(BroodBin == 4,
+                                         # Bin 1
+                                         ifelse(Bin == 1,
+                                                ifelse(BroodX < BinXRef4_6,
+                                                       ifelse(ScaledY > BinYRef2, 
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1),
+                                                       ifelse(ScaledY > BinYRef2,
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1)),
+                                                # Bin 2
+                                                ifelse(Bin == 2,
+                                                       ifelse(BroodX < BinXRef4_6,
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4),
+                                                       # Bin 3
+                                                       ifelse(Bin == 3,
+                                                              ifelse(BroodX < BinXRef4_6,
+                                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                     sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2))),
+                                                              # Bin 4
+                                                              ifelse(Bin == 4,
+                                                                     sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                     # Bin 5
+                                                                     ifelse(Bin == 5,
+                                                                            sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                            # Bin 6
+                                                                            ifelse(Bin == 6,
+                                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                   # Bin 7
+                                                                                   ifelse(Bin == 7,
+                                                                                          ifelse(ScaledY > BinYRef7,
+                                                                                                 sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                 PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
+                                                                                          # Bin 8
+                                                                                          ifelse(Bin == 8,
+                                                                                                 PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
+                                                                                                 NA)))))))),
+                                         # Distances from workers to brood centroids in bin 5
+                                         ifelse(BroodBin == 5,
+                                                # Bin 1
+                                                ifelse(Bin == 1,
+                                                       ifelse(ScaledY > BinYRef2,
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1),
+                                                       # Bin 2
+                                                       ifelse(Bin == 2,
+                                                              sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
+                                                              # Bin 3
+                                                              ifelse(Bin == 3,
+                                                                     sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
+                                                                     # Bin 4
+                                                                     ifelse(Bin == 4,
+                                                                            sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                            # Bin 5
+                                                                            ifelse(Bin == 5,
+                                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                   # Bin 6
+                                                                                   ifelse(Bin == 6,
+                                                                                          sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                          # Bin 7
+                                                                                          ifelse(Bin == 7,
+                                                                                                 ifelse(ScaledY > BinYRef7,
+                                                                                                        sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                        PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
+                                                                                                 # Bin 8
+                                                                                                 ifelse(Bin == 8,
+                                                                                                        PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                        NA)))))))),
+                                                # Distances from workers to brood centroids in bin 6
+                                                ifelse(BroodBin == 6,
+                                                       # Bin 1
+                                                       ifelse(Bin == 1,
+                                                              ifelse(ScaledY > BinYRef2,
+                                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
+                                                                     sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1),
+                                                              # Bin 2
+                                                              ifelse(Bin == 2,
+                                                                     sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
+                                                                     # Bin 3
+                                                                     ifelse(Bin == 3,
+                                                                            sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)),
+                                                                            # Bin 4
+                                                                            ifelse(Bin == 4,
+                                                                                   sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                   # Bin 5
+                                                                                   ifelse(Bin == 5,
+                                                                                          sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                          # Bin 6
+                                                                                          ifelse(Bin == 6,
+                                                                                                 sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                 # Bin 7
+                                                                                                 ifelse(Bin == 7,
+                                                                                                        ifelse(ScaledY > BinYRef7,
+                                                                                                               sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                               PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
+                                                                                                        # Bin 8
+                                                                                                        ifelse(Bin == 8,
+                                                                                                               PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                               NA)))))))),
+                                                       # Distances from workers to brood centroids in bin 8, note that there weren't any brood centroids in bin 7, so it is skipped here
+                                                       ifelse(BroodBin == 8,
+                                                              # Bin 1
+                                                              ifelse(Bin == 1,
+                                                                     ifelse(ScaledY > BinYRef2,
+                                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_2,
+                                                                            sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_1),
+                                                                     # Bin 2
+                                                                     ifelse(Bin == 2,
+                                                                            sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_2,
+                                                                            # Bin 3
+                                                                            ifelse(Bin == 3,
+                                                                                   sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_4,
+                                                                                   # Bin 4
+                                                                                   ifelse(Bin == 4,
+                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
+                                                                                          # Bin 5
+                                                                                          ifelse(Bin == 5,
+                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
+                                                                                                 # Bin 6
+                                                                                                 ifelse(Bin == 6,
+                                                                                                        ifelse(ScaledX > BinXRef7,
+                                                                                                               sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)),
+                                                                                                               sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6),
+                                                                                                        ifelse(Bin == 7,
+                                                                                                               ifelse(ScaledY < BinYRef8,
+                                                                                                                      sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                                      sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2))),
+                                                                                                               # Bin 8
+                                                                                                               ifelse(Bin == 8,
+                                                                                                                      sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
+                                                                                                                      NA)
+                                                                                                        )
+                                                                                                 )
+                                                                                          )
+                                                                                   )
+                                                                            )
+                                                                     )
+                                                              ),
+                                                              NA
+                                                       )))))))) %>%
+    group_by(Colony) %>% # Group by the colony column
+    mutate(ToBrood = BroodDist / MaxDist, # Scale the shortest distance from each individual to the brood center
+           ToBrood = ifelse(ToBrood > 1, 1, ToBrood)) %>% # As a precaution, if any scaled distances are greater than 1, the value is converted to 1
+    select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, ColorID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select desired columns
+    distinct() %>% # Remove any duplicates (shouldn't exist)
+    drop_na() # Remove NAs
 
 # CIRCLE NEST
 DistanceToBroodSFZCircle <- data.table %>% # Full worker data set 
@@ -6040,7 +6042,7 @@ DistanceToBroodSFZCircle <- data.table %>% # Full worker data set
   group_by(Colony, Day) %>% # Group by the Colony and Day columns
   mutate(BroodDist = sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)), # Shortest distance from each individual to the brood center
          ToBrood = BroodDist / MaxDist) %>% # Select the desired columns 
-  select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density, ToBrood) %>% # Select the desired columns
+  select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, ColorID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select the desired columns
   distinct() %>% # Remove any duplicates (shouldn't exist)
   drop_na() # Remove NAs
 
@@ -6057,4 +6059,3 @@ BroodCentDistWorkersSFZFid <<- BroodCentDistWorkersSFZ %>%
 
 # Run the mean distance to the brood center for the color marked workers data set FidelityZonesDataRD1_RD2
 DistanceToBroodSFZFunction(FidelityZonesDataRD1_RD2)
-  

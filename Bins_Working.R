@@ -1,7 +1,7 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: MAR 2022
-## email: gchism@email.arizona.edu
+## Date: APR 2022
+## email: gchism@arizona.edu
 ## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Nest section bin functions & nest density calculations
 ####################################################################################################################
@@ -113,14 +113,16 @@ FullDataCoordAlates <- FullDataCoordAlate %>%
   select(-c(Alate))
 
 # Alate sex ratios
-# Note, these ratios incluse "?", where the sex of the alate was uncertain.
+# Note, these ratios include "?", where the sex of the alate was uncertain.
 # We chose males because they were always present when alates were in the nest.
 FullDataCoordAlatesMales <- FullDataCoordAlates %>%
-  filter(Sex == "M") %>% #Filter only males
-  group_by(Colony, Nest, Day) %>% #Group by the Colony, Nest, and Day columns, allowing us to find the below values for each photo.
-  mutate(MaxTotal = max(TotalNumber), #The number of alates in that observation
-         MaxSex = max(SexNumber), #The number of males in that observation
-         Ratio = (MaxSex) / (MaxTotal)) %>% #The ratio of males / total alates
+  filter(TotalNumber != "?" & SexNumber != "?") %>%
+  group_by(Colony, Nest, Day, Sex) %>% #Group by the Colony, Nest, and Day columns, allowing us to find the below values for each photo.
+  mutate(MaxTotal = max(as.numeric(TotalNumber)), #The number of alates in that observation
+         MaxSex = max(as.numeric(SexNumber)), #The number of males in that observation
+         Ratio = MaxSex / MaxTotal) %>% #The ratio of males / total alates
+  filter(Sex == "M") %>%
+  ungroup() %>%
   select(Colony, Nest, Day, Ratio) %>% #Select the desired columns
   distinct() #Remove duplicate rows
 
@@ -130,7 +132,7 @@ FullDataCoordAlatesRatio <- left_join(FullDataCoordAlates, FullDataCoordAlatesMa
 # ALL COLONY MEMBERS
 FullDataCoordAll <- full_join(FullDataCoordWorkersRD1_RD2, FullDataCoordBroodRD1_RD2) %>%
   full_join(FullDataCoordQueenRD1_RD2) %>%
-  full_join(FullDataCoordAlates)
+  full_join(FullDataCoordAlatesRatio)
 
 ####################################################################################################################
 # NETLOGO DATA PROCESSING
@@ -138,13 +140,13 @@ FullDataCoordAll <- full_join(FullDataCoordWorkersRD1_RD2, FullDataCoordBroodRD1
 ####################################################################################################################
 
 # Removing brackets from xcor and ycor list 
-ArchitectureMoveModelFullCorrect <- ArchitectureMoveModelFull_GC_30_Sept_2021_TestExp_Table %>%
+ArchitectureMoveModelFullCorrect <- ArchitectureMoveModelFull %>%
   mutate(xcor = gsub("\\[|\\]", "", xcor),
          ycor = gsub("\\[|\\]", "", ycor))
 
 # Keep desired columns
 ArchitectureMoveModelFullCorrectRed <- ArchitectureMoveModelFullCorrect %>%
-  select(c(RunNumber, NestSize, Nest, MovementRule, TimeStep))
+  select(c(RunNumber, NestSize, Nest, TimeStep))
 
 # Keeping only X and Y coordinates
 # X coordinate
@@ -156,8 +158,8 @@ ArchitectureMoveModelFullCorrectRedYcor <- ArchitectureMoveModelFullCorrect %>%
   select(-c(xcor))
 
 # Splitting the xcor and ycor lists
-XCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedXcor$xcor, split = " ") #xcor
-YCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedYcor$ycor, split = " ") #ycor
+XCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedXcor$xcor, split = " ") # xcor
+YCoordCorrect <- strsplit(ArchitectureMoveModelFullCorrectRedYcor$ycor, split = " ") # ycor
 
 # Create a column that assigns unique IDs to each xcor and ycor row within each simulation run
 # X coordinate
@@ -174,8 +176,7 @@ NetlogoTestFull <- left_join(NetlogoTestX, NetlogoTestY) %>%
          ycor = as.numeric(ycor)) %>%
   select(-c(id)) %>%
   left_join(ArchitectureMoveModelFullCorrectRed) %>%
-  mutate(MovementRule = "Random",
-         xcor = xcor * 0.1,
+  mutate(xcor = xcor * 0.1,
          ycor = ycor * 0.1) %>% 
   rename(ScaledX = xcor, ScaledY = ycor)
 
@@ -1993,6 +1994,9 @@ FullDataCoordWorkersRD2 <- Colony11Binned %>%
   filter(Bin != 0, ColonyMember == "Workers" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID, Density)
 
+# Join all data
+FullDataCoordWorkersRD1_RD2 <- full_join(FullDataCoordWorkers, FullDataCoordWorkersRD2)
+
 # Combine all data sets into the final one for brood, colonies 1-10
 # This is because functions in other scripts keep colonies 1-10 (high nest density) and 11-20 (low nest density) separate
 FullDataCoordBrood <- Colony1Binned %>%
@@ -2024,6 +2028,9 @@ FullDataCoordBroodRD2 <- Colony11Binned %>%
   #Remove all of the zeros, since some coordinates exist that may be accidental or error. 
   filter(Bin != 0, ColonyMember == "Brood" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
+
+# Join all data
+FullDataCoordBroodRD1_RD2 <- full_join(FullDataCoordBrood, FullDataCoordBroodRD2)
 
 # Combine all data sets into the final one for queens, colonies 1-10
 # This is because functions in other scripts keep colonies 1-10 (high nest density) and 11-20 (low nest density) separate
@@ -2057,6 +2064,9 @@ FullDataCoordQueenRD2 <- Colony11Binned %>%
   filter(Bin != 0, ColonyMember == "Queens" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
 
+# Join all data
+FullDataCoordQueenRD1_RD2 <- full_join(FullDataCoordQueen, FullDataCoordQueenRD2)
+
 # Combine all data sets into the final one for alates
 # Note that alates are only found in the low density treatment so there is only one script to combine alates
 FullDataCoordAlates <- Colony11Binned %>%
@@ -2068,7 +2078,7 @@ FullDataCoordAlates <- Colony11Binned %>%
   full_join(Colony19Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
   filter(Bin != 0 & ColonyMember == "Alates" & Colony > 10) %>%
-  select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Sex, SexNumber, TotalNumber)
+  select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Sex, Ratio)
 
 ####################################################################################################################
 # NETLOGO SIMULATION RESULTS BIN FUNCTION
@@ -2080,15 +2090,17 @@ FullDataCoordAlates <- Colony11Binned %>%
 ####################################################################################################################
 
 CoordBinnedNetlogo <- function(data_table){
+  
   # Separating out the high nest density simulations
   BinCoordAssignSmall <- BinCoordNetlogo %>%
     filter(NestSize == "Small")
+  
   # Separating out the low nest density simulations
   BinCoordAssignLarge <- BinCoordNetlogo %>%
     filter(NestSize == "Large")
   
   # Binning small tube nest coordinates 
-  NetlogoBinnedTubeSmall <- data_table %>%
+  NetlogoBinnedTubeSmall <<- data_table %>%
     filter(NestSize == "Small" & Nest == "Tube") %>%
     mutate(Bin =
              # Bin 1
@@ -2130,7 +2142,7 @@ CoordBinnedNetlogo <- function(data_table){
                                                                                ScaledY <= BinCoordAssignSmall$ScaledY[9], 8, 0
                                                                              )))))))))
   # Binning large tube nest coordinates 
-  NetlogoBinnedTubeLarge <- data_table %>%
+  NetlogoBinnedTubeLarge <<- data_table %>%
     filter(NestSize == "Large" & Nest == "Tube") %>%
     mutate(Bin =
              # Bin 1
@@ -2172,7 +2184,7 @@ CoordBinnedNetlogo <- function(data_table){
                                                                                ScaledY <= BinCoordAssignLarge$ScaledY[9], 8, 0
                                                                      )))))))))
   # Binning small circle nest coordinates 
-  NetlogoBinnedCircleSmall <- data_table%>%
+  NetlogoBinnedCircleSmall <<- data_table%>%
     filter(NestSize == "Small" & Nest == "Circle") %>%
     mutate(Bin =
              # Bin 1
@@ -2199,7 +2211,7 @@ CoordBinnedNetlogo <- function(data_table){
                                                                      if_else(ScaledY > BinCoordAssignSmall$ScaledY[16], 8, 0
                                                                              )))))))))
   # Binning large circle nest coordinates 
-  NetlogoBinnedCircleLarge <- data_table %>%
+  NetlogoBinnedCircleLarge <<- data_table %>%
     filter(NestSize == "Large" & Nest == "Circle") %>%
     mutate(Bin =
              # Bin 1
@@ -2497,6 +2509,7 @@ Prop_functionWorkerSim <- function(data.table) {
     select(c(RunNumber, Nest, NestSize)) %>% # Select the desired columns
     distinct() # Remove duplicate rows
   NestArchNullBins <- full_join(NetlogoPropNull, BinsNullNetlogo) # Join the two null data sets
+  
   # Joining the working data set to the null one, which keeps the zeros in the final data set
   AntPropFullSim <<- full_join(NestArchNullBins, NetlogoProp) %>%  
     group_by(RunNumber, Nest, NestSize) %>% # Group by columns Colony, Nest, and Day
@@ -2512,3 +2525,4 @@ Prop_functionWorkerSim <- function(data.table) {
 
 # Run the Prop_functionWorkerSim function for the NetlogoBinnedFull data set 
 Prop_functionWorkerSim(NetlogoBinnedFull)
+

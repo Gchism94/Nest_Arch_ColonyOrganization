@@ -1,7 +1,7 @@
 ####################################################################################################################
 ## Author: GREG CHISM
-## Date: FEB 2022
-## email: gchism@email.arizona.edu
+## Date: APR 2022
+## email: gchism@arizona.edu
 ## Project: Nest shape influences colony organization in ants: spatial distribution and connectedness of colony members differs from that predicted by random movement and is affected by available space
 ## Title: Distance functions 
 ####################################################################################################################
@@ -52,18 +52,21 @@ DistanceCoordsFunction <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -71,16 +74,21 @@ DistanceCoordsFunction <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -95,24 +103,25 @@ DistanceCoordsFunction <- function(data.table) {
            DistanceX3 = ScaledX - BinX3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            DistanceY3 = ScaledY - BinY3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            # Pythagorean theorm sqrt(X^2 + Y^2) = the hypotenuse (PythagDist)
-           PythagDist = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, 
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                # This uses an if else statement where if its coordinates from bin 4 in the tube nest, and the x coordinate is less than the reference for the bin, then it uses DistanceY4, else just DistanceY from above
                                sqrt((DistanceX^2) + (DistanceY4^2)), # Pythagorean distance from the alternative x and y axes distances for bin 4 calculated above
                                # This uses an if else statement where if its coordinates from bin 7 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                               ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, 
+                               ifelse(Bin == 7 & ScaledY > BinY, 
                                       sqrt((DistanceX7^2) + (DistanceY^2)), # Pythagorean distance from the alternative x and y axes distances for bin 7 calculated above
                                       # This uses an if else statement where if its coordinates from bin 3 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                                      ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                      ifelse(Bin == 3 & ScaledY < BinY4,
                                              sqrt((DistanceX3^2) + (DistanceY3^2)), # Pythagorean distance from the alternative x and y axes distances for bin 3 calculated above
                                              sqrt((DistanceX^2) + (DistanceY^2))))), # Pythagorean distance from the x and y axes distances calculated above 
            # Total distance, which includes the the closest bin to the nest entrance and reference distance for that bin to the nest entrance
-           DistanceTotal = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
+           DistanceTotal = ifelse(Bin == 4 & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
                                          PythagDist + Distance4, # Shortest distance for coordinates using the alternative bin 4 distance 
-                                         ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
+                                         ifelse(Bin == 7 & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
                                                 PythagDist + Distance7, # Shortest distance for coordinates using the alternative bin 7 distance
-                                                ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                                ifelse(Bin == 3 & ScaledY < BinY4,
                                                        PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                        PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -140,6 +149,7 @@ DistanceCoordsFunction <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1) 
   
@@ -170,9 +180,10 @@ DistanceCoordsFunction <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   WorkerDistScaled <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
-    mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
+    mutate(ScaledDist = DistanceTotal / MaxDist, # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
            ScaledDist = ifelse(ScaledDist > 1, 1, ScaledDist),
            WorkerType = "Obsv") %>% 
     ungroup() %>% # Ungroup the data set
@@ -183,7 +194,6 @@ DistanceCoordsFunction <- function(data.table) {
 # Run the shortest distance from the bin function for the high density workers data set
 DistanceCoordsFunction(FullDataCoordWorkers)
 
-
 # Low density treatment
 DistanceCoordsFunctionRD2 <- function(data.table) {
   Bin1 <- DistBinsFull %>% # Bin 1 has corners that are ignored unless there is a way to make the shortest distance to the corner first, this code produces the reference coordinates for the corners
@@ -191,18 +201,21 @@ DistanceCoordsFunctionRD2 <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -210,16 +223,21 @@ DistanceCoordsFunctionRD2 <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -234,24 +252,25 @@ DistanceCoordsFunctionRD2 <- function(data.table) {
            DistanceX3 = ScaledX - BinX3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            DistanceY3 = ScaledY - BinY3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            # Pythagorean theorm sqrt(X^2 + Y^2) = the hypotenuse (PythagDist)
-           PythagDist = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, 
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                # This uses an if else statement where if its coordinates from bin 4 in the tube nest, and the x coordinate is less than the reference for the bin, then it uses DistanceY4, else just DistanceY from above
                                sqrt((DistanceX^2) + (DistanceY4^2)), # Pythagorean distance from the alternative x and y axes distances for bin 4 calculated above
                                # This uses an if else statement where if its coordinates from bin 7 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                               ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, 
+                               ifelse(Bin == 7 & ScaledY > BinY, 
                                       sqrt((DistanceX7^2) + (DistanceY^2)), # Pythagorean distance from the alternative x and y axes distances for bin 7 calculated above
                                       # This uses an if else statement where if its coordinates from bin 3 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                                      ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                      ifelse(Bin == 3 & ScaledY < BinY4,
                                              sqrt((DistanceX3^2) + (DistanceY3^2)), # Pythagorean distance from the alternative x and y axes distances for bin 3 calculated above
                                              sqrt((DistanceX^2) + (DistanceY^2))))), # Pythagorean distance from the x and y axes distances calculated above 
            # Total distance, which includes the the closest bin to the nest entrance and reference distance for that bin to the nest entrance
-           DistanceTotal = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
+           DistanceTotal = ifelse(Bin == 4 & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
                                   PythagDist + Distance4, # Shortest distance for coordinates using the alternative bin 4 distance 
-                                  ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
+                                  ifelse(Bin == 7 & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
                                          PythagDist + Distance7, # Shortest distance for coordinates using the alternative bin 7 distance
-                                         ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                         ifelse(Bin == 3 & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -279,6 +298,7 @@ DistanceCoordsFunctionRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1)   
   
@@ -309,6 +329,7 @@ DistanceCoordsFunctionRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   WorkerDistScaledRD2 <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
@@ -334,18 +355,21 @@ DistanceCoordsFunctionBrood <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -353,16 +377,21 @@ DistanceCoordsFunctionBrood <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -377,24 +406,25 @@ DistanceCoordsFunctionBrood <- function(data.table) {
            DistanceX3 = ScaledX - BinX3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            DistanceY3 = ScaledY - BinY3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            # Pythagorean theorm sqrt(X^2 + Y^2) = the hypotenuse (PythagDist)
-           PythagDist = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, 
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                # This uses an if else statement where if its coordinates from bin 4 in the tube nest, and the x coordinate is less than the reference for the bin, then it uses DistanceY4, else just DistanceY from above
                                sqrt((DistanceX^2) + (DistanceY4^2)), # Pythagorean distance from the alternative x and y axes distances for bin 4 calculated above
                                # This uses an if else statement where if its coordinates from bin 7 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                               ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, 
+                               ifelse(Bin == 7 & ScaledY > BinY, 
                                       sqrt((DistanceX7^2) + (DistanceY^2)), # Pythagorean distance from the alternative x and y axes distances for bin 7 calculated above
                                       # This uses an if else statement where if its coordinates from bin 3 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                                      ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                      ifelse(Bin == 3 & ScaledY < BinY4,
                                              sqrt((DistanceX3^2) + (DistanceY3^2)), # Pythagorean distance from the alternative x and y axes distances for bin 3 calculated above
                                              sqrt((DistanceX^2) + (DistanceY^2))))), # Pythagorean distance from the x and y axes distances calculated above 
            # Total distance, which includes the the closest bin to the nest entrance and reference distance for that bin to the nest entrance
-           DistanceTotal = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
+           DistanceTotal = ifelse(Bin == 4 & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
                                   PythagDist + Distance4, # Shortest distance for coordinates using the alternative bin 4 distance 
                                   ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
                                          PythagDist + Distance7, # Shortest distance for coordinates using the alternative bin 7 distance
                                          ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -422,6 +452,7 @@ DistanceCoordsFunctionBrood <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1) 
   
@@ -452,6 +483,7 @@ DistanceCoordsFunctionBrood <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   BroodDistScaled <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
@@ -472,18 +504,21 @@ DistanceCoordsFunctionBroodRD2 <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -491,16 +526,21 @@ DistanceCoordsFunctionBroodRD2 <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+ 
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -515,24 +555,25 @@ DistanceCoordsFunctionBroodRD2 <- function(data.table) {
            DistanceX3 = ScaledX - BinX3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            DistanceY3 = ScaledY - BinY3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            # Pythagorean theorm sqrt(X^2 + Y^2) = the hypotenuse (PythagDist)
-           PythagDist = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, 
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                # This uses an if else statement where if its coordinates from bin 4 in the tube nest, and the x coordinate is less than the reference for the bin, then it uses DistanceY4, else just DistanceY from above
                                sqrt((DistanceX^2) + (DistanceY4^2)), # Pythagorean distance from the alternative x and y axes distances for bin 4 calculated above
                                # This uses an if else statement where if its coordinates from bin 7 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                               ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, 
+                               ifelse(Bin == 7 & ScaledY > BinY, 
                                       sqrt((DistanceX7^2) + (DistanceY^2)), # Pythagorean distance from the alternative x and y axes distances for bin 7 calculated above
                                       # This uses an if else statement where if its coordinates from bin 3 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                                      ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                      ifelse(Bin == 3 & ScaledY < BinY4,
                                              sqrt((DistanceX3^2) + (DistanceY3^2)), # Pythagorean distance from the alternative x and y axes distances for bin 3 calculated above
                                              sqrt((DistanceX^2) + (DistanceY^2))))), # Pythagorean distance from the x and y axes distances calculated above 
            # Total distance, which includes the the closest bin to the nest entrance and reference distance for that bin to the nest entrance
-           DistanceTotal = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
+           DistanceTotal = ifelse(Bin == 4 & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
                                   PythagDist + Distance4, # Shortest distance for coordinates using the alternative bin 4 distance 
-                                  ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
+                                  ifelse(Bin == 7 & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
                                          PythagDist + Distance7, # Shortest distance for coordinates using the alternative bin 7 distance
-                                         ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                         ifelse(Bin == 3 & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -560,6 +601,7 @@ DistanceCoordsFunctionBroodRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+ 
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1) 
   
@@ -590,6 +632,7 @@ DistanceCoordsFunctionBroodRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   BroodDistScaledRD2 <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
@@ -613,18 +656,21 @@ DistanceCoordsFunctionQueen <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -632,16 +678,21 @@ DistanceCoordsFunctionQueen <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -656,24 +707,25 @@ DistanceCoordsFunctionQueen <- function(data.table) {
            DistanceX3 = ScaledX - BinX3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            DistanceY3 = ScaledY - BinY3, # Distance from each individual's x coordinate to the x reference Bin2 coordinate
            # Pythagorean theorm sqrt(X^2 + Y^2) = the hypotenuse (PythagDist)
-           PythagDist = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, 
+           PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                # This uses an if else statement where if its coordinates from bin 4 in the tube nest, and the x coordinate is less than the reference for the bin, then it uses DistanceY4, else just DistanceY from above
                                sqrt((DistanceX^2) + (DistanceY4^2)), # Pythagorean distance from the alternative x and y axes distances for bin 4 calculated above
                                # This uses an if else statement where if its coordinates from bin 7 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                               ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, 
+                               ifelse(Bin == 7 & ScaledY > BinY, 
                                       sqrt((DistanceX7^2) + (DistanceY^2)), # Pythagorean distance from the alternative x and y axes distances for bin 7 calculated above
                                       # This uses an if else statement where if its coordinates from bin 3 in the tube nest, and the y coordinate is greater than the reference for the, then it uses DistanceX7, else just DistanceX from above
-                                      ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                      ifelse(Bin == 3 & ScaledY < BinY4,
                                              sqrt((DistanceX3^2) + (DistanceY3^2)), # Pythagorean distance from the alternative x and y axes distances for bin 3 calculated above
                                              sqrt((DistanceX^2) + (DistanceY^2))))), # Pythagorean distance from the x and y axes distances calculated above 
            # Total distance, which includes the the closest bin to the nest entrance and reference distance for that bin to the nest entrance
-           DistanceTotal = ifelse(Bin == 4 & Nest == "Tube" & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
+           DistanceTotal = ifelse(Bin == 4 & ScaledX < BinX, # Nested ifelse statements that produce the shortest distance to the nest entrance for each coordinate
                                   PythagDist + Distance4, # Shortest distance for coordinates using the alternative bin 4 distance 
-                                  ifelse(Bin == 7 & Nest == "Tube" & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
+                                  ifelse(Bin == 7 & ScaledY > BinY, # Shortest distance for coordinates using the alternative bin 7 distance 
                                          PythagDist + Distance7, # Shortest distance for coordinates using the alternative bin 7 distance
-                                         ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
+                                         ifelse(Bin == 3 & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -701,6 +753,7 @@ DistanceCoordsFunctionQueen <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1) 
   
@@ -731,6 +784,7 @@ DistanceCoordsFunctionQueen <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   QueenDistScaled <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
@@ -751,18 +805,21 @@ DistanceCoordsFunctionQueenRD2 <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% # This first section of script makes "Bin4" a column that will make the shortest distance point the same as bin 3, which corrects the issue stated above
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -770,16 +827,21 @@ DistanceCoordsFunctionQueenRD2 <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% #Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -812,6 +874,7 @@ DistanceCoordsFunctionQueenRD2 <- function(data.table) {
                                          ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -839,6 +902,7 @@ DistanceCoordsFunctionQueenRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   # Joins together the tube nest shortest distances to the nest entrance
   DistBinsTube <- full_join(DistBinsTube, DistBinsTubeBin1) 
   
@@ -869,6 +933,7 @@ DistanceCoordsFunctionQueenRD2 <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   QueenDistScaledRD2 <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
@@ -884,21 +949,6 @@ DistanceCoordsFunctionQueenRD2(FullDataCoordQueenRD2)
 # Join queen distance data sets
 QueenDistScaledRD1_RD2 <- full_join(QueenDistScaled, QueenDistScaledRD2) 
 
-# ALATE SEX RATIOS
-# Note, these ratios incluse "?", where the sex of the alate was uncertain.
-# We chose males because they were always present when alates were in the nest.
-FullDataCoordAlatesMales <- FullDataCoordAlates %>%
-  filter(Sex == "M") %>% # Filter only males
-  group_by(Colony, Nest, Day) %>% # Group by the Colony, Nest, and Day columns, allowing us to find the below values for each photo.
-  mutate(MaxTotal = max(TotalNumber), # The number of alates in that observation
-         MaxSex = max(SexNumber), # The number of males in that observation
-         Ratio = (MaxSex) / (MaxTotal)) %>% # The ratio of males / total alates
-  select(Colony, Nest, Day, Ratio) %>% # Select the desired columns
-  distinct() # Remove duplicate rows
-
-# Join the alate and male data sets
-FullDataCoordAlatesRatio <- left_join(FullDataCoordAlates, FullDataCoordAlatesMales)
-
 # ALATES
 # Alates are only in the Low density treatment
 DistanceCoordsFunctionAlate <- function(data.table) {
@@ -907,18 +957,21 @@ DistanceCoordsFunctionAlate <- function(data.table) {
     group_by(Colony, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = BinX1 - 0.1, RightCorner = BinX1 + 0.1) %>%
     select(Colony, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFull %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% 
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(Colony, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFull %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(Colony) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(Colony, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFull %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(Colony) %>%
@@ -926,16 +979,21 @@ DistanceCoordsFunctionAlate <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(Colony, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
+  
   DistBinsFull <- left_join(DistBinsFull, Bin4) %>% # Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFull %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFull %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -968,6 +1026,7 @@ DistanceCoordsFunctionAlate <- function(data.table) {
                                          ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
                                                 PythagDist + Distance3, # Shortest distance for coordinates using the alternative bin 3 distance
                                                 PythagDist + Distance)))) # Shortest distance for coordinates without alternatives
+  
   # Bin 1 for the tube nest, this considers corners at the entrance
   DistBinsTubeBin1 <- left_join(BinsTube, DistBins.tube) %>% # Joining tube nest data with associated reference coordinates
     group_by(Colony, Bin) %>% # Group by Colony and Bin columns
@@ -1025,17 +1084,19 @@ DistanceCoordsFunctionAlate <- function(data.table) {
                                          sqrt((DistanceX^2) + (DistanceY^2))), # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
                                   ifelse(AngleCheckEnt == "Yes",  PythagDistEnt + SegEntRight, # Right corner, if the condition is true
                                          sqrt((DistanceX^2) + (DistanceY^2))))) # Uses a coordinates pythagorean distance to the nest entrance if the corner will not be cut ("No" from above)
+  
   AlateDistScaledRD2 <<- full_join(DistBinsTube, DistBinsCircle) %>% # Full join the Tube and Circle nest data sets 
     group_by(Colony) %>% # Group by the Colony column
     mutate(ScaledDist = DistanceTotal / (MaxDist), # Divide the distance of each individual to the entrance by the maximum possible distance in the tube nest shape. 
            ScaledDist = ifelse(ScaledDist > 1, 1, ScaledDist)) %>% 
     ungroup() %>% # Ungroup the data set
     select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ScaledDist, Sex, Ratio) %>% # Select the desired columns. 
-    left_join(CornerFull) # Join with data set that associates nest sections with the presence of a corner or not
-}
+    left_join(CornerFull) %>% # Join with data set that associates nest sections with the presence of a corner or not
+    distinct()
+  }
 
 # Run the shortest distance from the bin function for the alate data set
-DistanceCoordsFunctionAlate(FullDataCoordAlatesRatio)
+DistanceCoordsFunctionAlate(FullDataCoordAlates)
 
 # NETLOGO SIMULATIONS
 DistanceCoordsFunctionNetlogo <- function(data.table) {
@@ -1044,18 +1105,21 @@ DistanceCoordsFunctionNetlogo <- function(data.table) {
     group_by(NestSize, Nest) %>%
     mutate(BinX1 = BinX, LeftCorner = 3.65, RightCorner = 3.85) %>%
     select(NestSize, Nest, BinX1, LeftCorner, RightCorner)
+  
   Bin4 <- DistBinsFullNetlogo %>% # Bin 4 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left
     filter(Nest == "Tube" & Bin == 3) %>% 
     group_by(NestSize) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
     select(NestSize, BinY4 ,Distance4)
+  
   Bin7 <- DistBinsFullNetlogo %>% # Bin 7 has the same problem as above, one shortest distance that uses the x coordinate of bin 7, and another at Bin 4 where Scaled Y values are greater than the y coordinate of Bin 7
     filter(Nest == "Tube" & Bin == 4) %>%
     group_by(NestSize) %>%
     mutate(BinX7 = BinX,
            Distance7 = Distance) %>% 
     select(NestSize, BinX7, Distance7) # The distance that is added to the Pythagorean distance is also different
+  
   Bin3 <- DistBinsFullNetlogo %>% # Bin 3 has the same problem as above, one shortest distance that uses the x coordinate of bin 3, and another at Bin 2 where Scaled Y values are less than the y coordinate of Bin 3
     filter(Nest == "Tube" & Bin == 2) %>%
     group_by(NestSize) %>%
@@ -1063,16 +1127,21 @@ DistanceCoordsFunctionNetlogo <- function(data.table) {
            BinY3 = BinY,
            Distance3 = Distance) %>%
     select(NestSize, BinY3, BinX3, Distance3) # The distance that is added to the Pythagorean distance is also different
-  DistBinsFullNetlogo <- left_join(DistBinsFullNetlogo, Bin4) %>% #Full distance references, joining all alternative references from above
+  
+  DistBinsFullNetlogo <- left_join(DistBinsFullNetlogo, Bin4) %>% # Full distance references, joining all alternative references from above
     left_join(Bin7) %>%
     left_join(Bin3) %>%
     left_join(Bin1)
+  
   DistBins.tube <- DistBinsFullNetlogo %>% # Subsetting tube distance references
     filter(Nest == "Tube") 
+  
   DistBins.circle <- DistBinsFullNetlogo %>% # Subsetting circle distance references
     filter(Nest == "Circle") 
+  
   BinsTube <- data.table %>% # Subsetting tube nest data
     filter(Nest == "Tube")
+  
   BinsCircle <- data.table %>% # Subsetting circle nest data
     filter(Nest == "Circle") 
   
@@ -1188,18 +1257,18 @@ DistanceCoordsFunctionNetlogo(NetlogoBinnedFull)
 # TUBE NEST SHAPE 
 # First we make data sets of distance segments either between a bin and the entrance or between two sections
 # This is done outside of the actual function below to take less computing time
+# First we make data sets of distance segments either between a bin and the entrance or between two sections
+# This is done outside of the actual function below to take less computing time
 TubeDistances <- DistBinsFull %>% # Filtering out the Tube reference distances
   filter(Nest == "Tube")
 
 # Filtering out only distances for bin 1
 DistBin1 <- TubeDistances %>% 
   filter(Bin == 1) %>%
-  mutate(BinX = 3.75, # Create x reference column
-         BinY = 0, # Create y reference column
-         Dist1 = Distance) %>% # Set reference distance
-  select(Colony, Nest ,Dist1) # Select desired columns
+  mutate(Dist1 = Distance) %>% # Set reference distance
+  select(Colony, Nest, Dist1) # Select desired columns
 
-# Filtering and creating reference distances for nest sections (bins) 2 - 8
+# Filtering and creating reference distances for bins 2 - 8
 # Bin 2
 DistBin2 <- TubeDistances %>%
   filter(Bin == 2) %>%
@@ -1251,22 +1320,28 @@ DistBin1_8Full <- full_join(DistBin1, DistBin2) %>%
   full_join(DistBin7) %>%
   full_join(DistBin8) %>%
   mutate(
-    Distance7_0 = Dist7, # Distance from bin 7 to 0
-    Distance3_0 = Dist3, # Distance from bin 4 to 0 
-    Distance8_7 = abs(Dist8 - Dist7), # Distance from bin 8 to 6 or 4 to 2 or 4 to 5  
-    Distance8_1 = abs(Dist8 - Dist1), # Distance from bin 8 to 1
-    Distance7_1 = abs(Dist7 - Dist1), # Distance from bin 7 to 1
-    Distance3_1 = abs(Dist3 - Dist1), # Distance from bin 4 to 1
-    Distance2_1 = abs(Dist2 - Dist1), # Distance from bin 3 to 1
-    Distance8_2 = abs(Dist8 - Dist2), # Distance from bin 8 to 2
-    Distance7_2 = abs(Dist7 - Dist2), # Distance from bin 7 to 2
-    Distance7_3 = abs(Dist7 - Dist3), # Distance from bin 7 to 3
-    Distance8_4 = abs(Dist8 - Dist3), # Distance from bin 8 to 4
-    Distance7_4 = abs(Dist7 - Dist3 - Distance8_7) # Distance from bin 7 to 4
+    Distance8_6 = abs(Dist8 - Dist7), # Distance from bin 8 to 6
+    Distance4_2 = Distance8_6, # Distance from bin 4 to 2
+    Distance3_5 = Distance8_6, # Distance from bin 3 to 5
+    Distance7_5 = Distance8_6, # Distance from bin 7 to 5 
+    Distance8_1 = abs(Dist8 - Dist2), # Distance from bin 8 to 1
+    Distance7_1 = abs(Dist7 - Dist2), # Distance from bin 7 to 1
+    Distance4_1 = abs(Dist4 - Dist2), # Distance from bin 4 to 1
+    Distance3_1 = abs(Dist3 - Dist2), # Distance from bin 3 to 1
+    Distance8_2 = abs(Dist8 - Dist3), # Distance from bin 8 to 2
+    Distance7_2 = abs(Dist7 - Dist3), # Distance from bin 7 to 2
+    Distance7_3 = abs(Dist7 - Dist4), # Distance from bin 7 to 3
+    Distance8_3 = abs(Dist8 - Dist4), # Distance from bin 8 to 3
+    Distance5_1 = abs(Distance4_1 + Distance8_6), # Distance from bin 5 to 1 
+    Distance6_1 = abs(Distance7_1 - Distance8_6), # Distance from bin 6 to 1
+    Distance5_6 = abs(Distance6_1 - Distance5_1), # Distance from bin 5 to 6 
+    Distance7_4 = abs(Distance7_3 - Distance8_6), # Distance from bin 7 to 4
+    Distance2_5 = abs(Distance8_6 * 2), # Distance from bin 2 to 5
+    Distance2_6 = abs(Distance2_5 + Distance5_6), # Distance from bin 2 to 6
+    Distance3_6 = abs(Distance8_6 + Distance5_6), # Distance from bin 3 to 6 
+    Distance8_4 = abs(Distance8_3 - Distance8_6), # Distance from bin 8 to 4
+    Distance8_5 = abs(Distance8_4 - Distance5_6), # Distance from bin 8 to 5
   )
-
-# Bin 4 and 7 has two possible shortest distances, one on the right past the farthest x coordinate of bin 3, and one to the left,
-# which we account for this with two sets of possible reference coordinates
 
 # Creating the second bin 4 reference y coordinate
 Bin4 <- DistBinsFull %>%
@@ -1289,14 +1364,6 @@ Bin7 <- DistBinsFull %>%
   mutate(BinX7 = BinX) %>%
   select(Colony, BinX7)
 
-# Creating the second bin 6 reference x coordinate
-Bin4.2 <- DistBinsFull %>%
-  filter(Nest == "Tube" & Bin == 6) %>%
-  group_by(Colony) %>%
-  mutate(BinX6 = BinX,
-         Distance4.2 = Distance) %>%
-  select(Colony, BinX6)
-
 # Creating the second bin 7 reference x coordinate
 Bin7.2 <- DistBinsFull %>%
   filter(Nest == "Tube" & Bin == 7) %>%
@@ -1313,28 +1380,20 @@ Bin3 <- DistBinsFull %>%
   select(Colony, BinX3)
 
 # Creating the alternative x and y coordinates for bin 3 reference towards the entrance
-Bin2 <-DistBinsFull %>%
+Bin2 <- DistBinsFull %>%
   filter(Nest == "Tube" & Bin == 2) %>%
   group_by(Colony) %>%
-  mutate(BinY3.2 = BinX,
-         BinX3.2 = BinY,
+  mutate(BinX3.2 = BinX,
+         BinY3.2 = BinY,
          Distance3 = Distance) %>%
   select(Colony, BinY3.2, BinX3.2, Distance3)
 
-# Creating columns for bins 2 and 3 to create reference distances in the function below
-Bin2X <- DistBinsFull %>%
-  filter(Nest == "Tube" & Bin == 2) %>%
-  group_by(Colony) %>%
-  mutate(BinX.2 = BinX) %>%
-  select(Colony, BinX.2)
 
-# Combining the two different sets of reference coordinates
+# Combining the sets of reference coordinates
 Bin4.6 <- full_join(Bin4, Bin6) %>%
   full_join(Bin7) %>%
-  full_join(Bin4.2) %>%
   full_join(Bin7.2) %>%
   full_join(Bin3) %>%
-  full_join(Bin2X) %>%
   full_join(Bin2)
 
 # Function that uses the data sets of worker or simulation distances to the entrance
@@ -1342,30 +1401,27 @@ Bin4.6 <- full_join(Bin4, Bin6) %>%
 MinDistanceTube <- function(data_table) {
   # Filtering tube nest data and joining reference coordinate and distance columns
   DistanceToBins <<- data_table %>% 
-    filter(Nest == "Tube") %>%
     left_join(DistBinsFull) %>%
     left_join(Bin4.6) %>%
     left_join(DistBin1_8Full) %>%
+    filter(Nest == "Tube") %>%
     # Creating columns of reference distances from both the created distances and reference coordinates above 
-    mutate(Distance3_4 = abs(BinX3 - BinX.2), # Shortest distance from Bin 3 to 4
-           Distance3_6 = abs(Distance8_7 + Distance3_4), # Shortest distance from Bin 3 to 6
-           Distance7_5 = abs(Distance7_0 - Distance3_0 - Distance3_6), # Shortest distance from Bin 7 to 5
-           # Creating the second x and y coordinate used to find shortest distances to each Bin
+    mutate(# Creating the second x and y coordinate used to find shortest distances to each Bin
            # These reference coordinates representing distances away from the entrance
            # Second x reference coordinates 
            BinX2 = ifelse(
              # If bin 1, use the same x reference
-             Bin == 1, BinX, 
+             Bin == 1, BinX3.2, 
              # If bin 2, BinX2 = the Bin 2 x reference - the distance from bin 3 to 4
-             ifelse(Bin == 2, BinX - Distance3_4, 
+             ifelse(Bin == 2, BinX - Distance5_6, 
                     # If bin 3, use the same x reference 
                     ifelse(Bin == 3, BinX,
                            # If bin 4, BinX2 = the bin 4 x reference + the distance from the back of the nest to bin 7
-                           ifelse(Bin == 4, BinX + Distance8_7, 
+                           ifelse(Bin == 4, BinX + Distance4_2, 
                                   # If bin 5, BinX2 = the Bin 5 x reference + the distance from bin 3 to 4
-                                  ifelse(Bin == 5, BinX + Distance3_4,
+                                  ifelse(Bin == 5, BinX + Distance4_2 + Distance5_6,
                                          # If bin 6, BinX2 = the bin 6 x reference + the distance from the back of the nest to bin 7
-                                         ifelse(Bin == 6, BinX + Distance8_7,
+                                         ifelse(Bin == 6, BinX + Distance7_3,
                                                 # If bin 7, use the same x reference
                                                 ifelse(Bin == 7, BinX,
                                                        # If bin 8, use the same x reference
@@ -1377,17 +1433,17 @@ MinDistanceTube <- function(data_table) {
              # If bin 1, BinY2 = the bin 1 y reference - the distance from bin 3 to 4 - the width of the bin
              # The width of tube nest bins are 0.2723 * the length of the bin
              # Since the distance from bin 3 to 4 is the length of the tube nest Bin, multiplying this by 0.2723 gives us the width. 
-             Bin == 1, BinY + Distance3_4 - (0.2723 * Distance3_4),
+             Bin == 1, BinY + Distance4_2 + 0.2,
              # If bin 2, BinY2 = the Bin 2 y reference + the width of tube nest Bins
-             ifelse(Bin == 2, BinY + (0.2723 * Distance3_4),
+             ifelse(Bin == 2, BinY4,
                     # If bin 3, BinY2 = the bin 3 y reference + the distance from Bin 8 to Bin 6
-                    ifelse(Bin == 3, BinY + Distance8_7,
+                    ifelse(Bin == 3, BinY + Distance4_2,
                            # For bin 4, 5, and 6, use the same y reference
                            ifelse(Bin == 4, BinY,
                                   ifelse(Bin == 5, BinY,
                                          ifelse(Bin == 6, BinY,
                                                 # For Bin 7, BinY2 = the bin 7 y reference - the distance from the back of the nest to bin 7
-                                                ifelse(Bin == 7, BinY - Distance8_7,
+                                                ifelse(Bin == 7, BinY - Distance8_6,
                                                        # If bin 8, use the same y reference
                                                        ifelse(Bin == 8, BinY,
                                                               0)))))))),
@@ -1395,14 +1451,17 @@ MinDistanceTube <- function(data_table) {
            # Distances from the worker to the occupied bins edge towards the nest entrance
            DistanceX = ScaledX - BinX, # Distance from each worker x coordinate to the bin x reference for bin closest to the entrance in a straight line
            DistanceY = ScaledY - BinY, # Distance from each worker y coordinate to the bin y reference for bin closest to the entrance in a straight line
+           DistanceX2 = ScaledX - BinX2, # Alternative x axis distance towards creating the shortest distance to the closest bin facing away from the nest
+           DistanceY2 = ScaledY - BinY2, # Alternative y axis distance towards creating the shortest distance to the closest bin facing away from the nest
            DistanceY4 = ScaledY - BinY4, # Distance from each worker y coordinate to the second bin 3 y coordinate creating a direct path to bin 2
            DistanceY6 = ScaledY - BinY7, # Distance from each worker y coordinate to the second bin 6 y coordinate creating a direct path to bin 8
            DistanceX7 = ScaledX - BinX7, # Distance from each worker x coordinate to the second bin 6 and 7 x coordinate creating a direct path to bin 4 
-           DistanceX4.2 = ScaledX - BinX6, # Distance from each worker x coordinate to the second bin 4 x coordinate creating a direct path to bin 6
            DistanceX6 = ScaledX - BinX7.2, # Distance from each worker x coordinate to the bin 7 x coordinate creating a direct path to bin 7
            DistanceX3 = ScaledX - BinX3, # Distance from each worker x coordinate to the second bin 3 x coordinate, creating a direct path for bins 4-6 to bin 3
-           DistanceX3.2 = ScaledX - BinX3.2, # Distance from each worker x coordinate to the second bin 3 x coordinate, creating a direct path to bin 4 for bin 3 coordinates
-           DistanceY3.2 = ScaledY - BinY3.2, # Distance from each worker y coordinate to the second bin 3 y coordinate, creating a direct path to bin 4 for bin 3 coordinates
+           DistanceX3.2 = ScaledX - BinX3.2, # Distance from each worker x coordinate to the second bin 3 x coordinate, creating a direct path to bin 1 for bin 3 coordinates
+           DistanceY3.2 = ScaledY - BinY3.2, # Distance from each worker y coordinate to the second bin 3 y coordinate, creating a direct path to bin 1 for bin 3 coordinates
+           DistanceX5.6 = DistanceX - Distance3_5 - Distance5_6, # Distance from each worker x coordinate to the BinX reference - the reference distances between 3 and 5 and 5 and 6. 
+           DistanceX4.7 = DistanceX + Distance7_4, # Distance from each worker x coordinate to the BinX reference + the distance from bin 7 to bin 4 
            # The below script is for calculating the shortest distance from each worker to each bin
            # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
            # A set of shortest distances are calculated for bins towards and away from the nest entrance from the reference of each worker
@@ -1417,107 +1476,114 @@ MinDistanceTube <- function(data_table) {
                                       ifelse(Bin == 3 & Nest == "Tube" & ScaledY < BinY4,
                                              sqrt((DistanceX3.2^2) + (DistanceY3.2^2)),
                                              sqrt((DistanceX^2) + (DistanceY^2))))),
-           
-           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
-           PythagDist3 = sqrt((DistanceX3^2) + (DistanceY^2)), # Creates the shortest distance to bin 3
-           # Distances from the worker to the occupied Bins edge towards the back of the nest 
-           DistanceX2 = ScaledX - BinX2, # Alternative x axis distance towards creating the shortest distance to the closest bin facing away from the nest
-           DistanceY2 = ScaledY - BinY2, # Alternative y axis distance towards creating the shortest distance to the closest bin facing away from the nest
            PythagDist2 = sqrt((DistanceX2^2) + (DistanceY2^2)), # Shortest distance to the closest bin facing away from the nest 
-           PythagDist8 = sqrt((DistanceX^2) + (DistanceY6^2)), # Shortest distance from bin 6 to bin 8 
-           PythagDist4.2 = sqrt((DistanceX4.2^2) + (DistanceY2^2)), # Shortest distance from bin 4 to bin 6
+           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
+           PythagDist3 = sqrt((DistanceX^2) + (DistanceY4^2)), # Creates the shortest distance to bin 3 (uses the worker's BinX reference)
+           PythagDist4.6 = sqrt(((DistanceX2 + Distance5_6)^2) + (DistanceY2^2)), # Shortest distance from coordinates in bin 4 to bin 6
+           PythagDist5.4 = sqrt(((DistanceX - Distance3_5)^2) + (DistanceY2^2)), # Shortest distance from coordinates in bin 5 to bin 4 
+           PythagDist8 = sqrt((DistanceX6^2) + (DistanceY6^2)), # Shortest distance from bin 6 to bin 8 
+           PythagDist3.1 = sqrt(((DistanceX3.2)^2) + ((DistanceY3.2)^2)), # Shortest distance to the bin 3 x and y coordinate
            PythagDist7 = sqrt((DistanceX6^2) + (DistanceY2^2)), # Shortest distance to bin 7
+           PythagDist5.6 = sqrt((DistanceX5.6^2) + (DistanceY2^2)), # Shortest distance to bin 6 
+           PythagDist5.7 = sqrt((DistanceX5.6^2) + (DistanceY^2)), # Shortest distance to bin 5 (meant for coordinates in Bin 6)
+           PythagDist4.7 = sqrt((DistanceX4.7^2) + (DistanceY^2)), # Shortest distance to bin 4 (meant for coordinates in Bin 7)
+           PythagDist1.3 = sqrt((DistanceX3^2) + (DistanceY4^2)), # Shortest distance to bin 3 (meant for coordinates in Bin 1)
+           PythagDist6.4 = sqrt(((DistanceX + Distance5_6)^2) + (DistanceY^2)), # Shortest distance to Bin 4 for coordinates in Bin 6
            # Calculating the average distance of each worker to all bins but their own
            MeanDist = 
              # Distances from workers in bin 1 to all other bins divided by 7
              ifelse(Bin == 1, (((ifelse(ScaledY > BinY3.2,
-                                        PythagDist2 + Distance8_2,
+                                        PythagDist1.3 + Distance8_2,
                                         Distance8_1 + PythagDist2)) + # To bin 8
                                   (ifelse(ScaledY > BinY3.2, 
-                                          Distance7_2 + PythagDist2,
+                                          Distance7_2 + PythagDist1.3,
                                           Distance7_1 + PythagDist2)) + # To bin 7
                                   (ifelse(ScaledY > BinY3.2,
-                                          Distance3_4 + PythagDist2,
-                                          Distance3_1 + (Distance3_4 * 2) + PythagDist2)) + # To bin 6
+                                          Distance2_6 + PythagDist1.3,
+                                          Distance6_1 + PythagDist2)) + # To bin 6 
                                   (ifelse(ScaledY > BinY3.2,
-                                          Distance3_4 + Distance8_7 + PythagDist2,
-                                          Distance3_1 + Distance8_7 + PythagDist2)) + # To bin 5
+                                          Distance2_5 + PythagDist1.3,
+                                          Distance5_1 + PythagDist2)) + # To bin 5
                                   (ifelse(ScaledY > BinY3.2,
-                                          Distance3_4 + PythagDist2,
-                                          Distance3_1 + PythagDist2)) + # To bin 4
+                                          Distance4_2 + PythagDist1.3,
+                                          Distance4_1 + PythagDist2)) + # To bin 4
                                   (ifelse(ScaledY > BinY3.2,
-                                          PythagDist2,
-                                          Distance2_1 + PythagDist2)) + # To bin 3
+                                          PythagDist1.3,
+                                          Distance3_1 + PythagDist2)) + # To bin 3
                                   PythagDist2) / 7), # To bin 2
                     # Distances from workers in bin 2 to all other bins divided by 7
                     ifelse(Bin == 2, (((Distance8_2 + PythagDist2) + # To bin 8
                                          ((Distance7_2 + PythagDist2)) + # To bin 7
-                                         (Distance7_2 - Distance7_5 + PythagDist2) + # To bin 6
-                                         (Distance8_7 * 2 + PythagDist2) + # To bin 5
-                                         (Distance8_7 + PythagDist2) + # To bin 4
+                                         (Distance2_6 + PythagDist2) + # To bin 6
+                                         (Distance2_5 + PythagDist2) + # To bin 5
+                                         (Distance4_2 + PythagDist2) + # To bin 4
                                          (PythagDist2) + # To bin 3
                                          (PythagDist)) / 7), # To bin 1
                            # Distances from workers in Bin 3 to all other bins divided by 7
                            ifelse(Bin == 3, (((Distance8_4 + PythagDist2) + # To bin 8
                                                 (Distance7_4 + PythagDist2) + # To bin 7
-                                                (Distance8_7 + Distance3_4 + PythagDist2) + # To bin 6
-                                                (Distance8_7 + PythagDist2) + # To bin 5
+                                                (Distance3_6 + PythagDist2) + # To bin 6
+                                                (Distance3_5 + PythagDist2) + # To bin 5
                                                 (PythagDist2) + # To bin 4
                                                 (PythagDist) + # To bin 2
-                                                (ifelse(ScaledY < BinY4, PythagDist,
-                                                        PythagDist + Distance2_1))) / 7), # To bin 1
+                                                (ifelse(ScaledY < BinY4, PythagDist3.1,
+                                                        PythagDist + Distance3_1))) / 7), # To bin 1
                                   # Distances from workers in bin 4 to all other bins divided by 7
-                                  ifelse(Bin == 4, (((Distance8_7 + PythagDist7) + # To bin 8
+                                  ifelse(Bin == 4, (((Distance8_6 + PythagDist7) + # To bin 8
                                                        (PythagDist7) + # To bin 7
-                                                       (PythagDist4.2) + # To bin 6
+                                                       (PythagDist4.6) + # To bin 6
                                                        (PythagDist2) + # To bin 5
                                                        (PythagDist) + # To bin 3
                                                        (ifelse(ScaledX < BinX, 
-                                                               PythagDist,
-                                                               PythagDist + Distance8_7)) + # To bin 2
+                                                               PythagDist3,
+                                                               PythagDist + Distance4_2)) + # To bin 2
                                                        (ifelse(ScaledX < BinX, 
-                                                               PythagDist + Distance3_1,
-                                                               PythagDist + Distance3_4 + Distance3_1))) / 7), # To Bin 1
+                                                               PythagDist3 + Distance3_1,
+                                                               PythagDist + Distance4_1))) / 7), # To Bin 1
                                          # Distances from workers in bin 5 to all other bins divided by 7
-                                         ifelse(Bin == 5, (((Distance8_7 +  PythagDist7) + # To bin 8
+                                         ifelse(Bin == 5, (((Distance8_6 +  PythagDist7) + # To bin 8
                                                               (PythagDist7) + # To bin 7
                                                               (PythagDist2) + # To bin 6
-                                                              (PythagDist) + # To bin 4
-                                                              (PythagDist3) + # To bin 3
-                                                              (PythagDist3 + Distance8_7) + # To bin 2
-                                                              (PythagDist3 + Distance3_1)) / 7), # To bin 1
+                                                              (PythagDist5.4) + # To bin 4
+                                                              (PythagDist) + # To bin 3
+                                                              (PythagDist + Distance4_2) + # To bin 2
+                                                              (PythagDist + Distance4_1)) / 7), # To bin 1
                                                 # Distances from workers in bin 6 to all other bins divided by 7
                                                 ifelse(Bin == 6, (((ifelse(ScaledX > BinX,
                                                                            PythagDist8, 
-                                                                           PythagDist2 + Distance8_7)) + # To bin 8
+                                                                           PythagDist2 + Distance8_6)) + # To bin 8
                                                                      (PythagDist2) + # To bin 7
-                                                                     (PythagDist) + # To bin 5
-                                                                     (PythagDist4) + # To bin 4
-                                                                     (PythagDist3) + # To bin 3
-                                                                     (PythagDist3 + Distance8_7) + # To bin 2
-                                                                     (PythagDist3 + Distance3_4 + Distance8_7 + Distance3_1)) / 7), # To bin 1
+                                                                     (PythagDist5.6) + # To bin 5
+                                                                     (PythagDist6.4) + # To bin 4
+                                                                     (PythagDist) + # To bin 3
+                                                                     (PythagDist + Distance4_2) + # To bin 2
+                                                                     (PythagDist + Distance4_1)) / 7), # To bin 1
                                                        # Distances from workers in bin 7 to all other bins divided by 7
                                                        ifelse(Bin == 7,(((PythagDist2) + # To bin 8
                                                                            (PythagDist) + # To bin 6
                                                                            (ifelse(ScaledY > BinY,
-                                                                                   PythagDist,
+                                                                                   PythagDist5.7,
                                                                                    PythagDist + Distance7_5)) + # To bin 5
                                                                            (ifelse(ScaledY > BinY,
-                                                                                   PythagDist,
+                                                                                   PythagDist4.7,
                                                                                    PythagDist + Distance7_4)) + # To bin 4
                                                                            (ifelse(ScaledY > BinY,
-                                                                                   PythagDist,
+                                                                                   PythagDist4,
                                                                                    PythagDist + Distance7_3)) + # To bin 3
-                                                                           (PythagDist + Distance7_2) + # To bin 2
-                                                                           (PythagDist + Distance7_1)) / 7), # To bin 1
+                                                                           (ifelse(ScaledY > BinY,
+                                                                                   PythagDist4 + Distance4_2, 
+                                                                                   PythagDist + Distance7_2)) + # To bin 2
+                                                                           (ifelse(ScaledY > BinY,
+                                                                                   PythagDist4 + Distance4_1, 
+                                                                                   PythagDist + Distance7_1))) / 7), # To bin 1
                                                               # Distances from workers in bin 8 to all other bins divided by 7
                                                               ifelse(Bin == 8, (((PythagDist) + # To bin 7
-                                                                                   (PythagDist + Distance8_7) + # To bin 6
-                                                                                   (PythagDist + Distance7_5 + Distance8_7) + # To bin 5
-                                                                                   (PythagDist + Distance7_4) + # To bin 4
-                                                                                   (PythagDist + Distance7_4) + # To bin 3
-                                                                                   (PythagDist + Distance7_4 + Distance8_7) + # To bin 2
-                                                                                   (PythagDist + Distance7_4 + Distance3_1)) / 7), # To bin 1
+                                                                                   (PythagDist + Distance8_6) + # To bin 6
+                                                                                   (PythagDist + Distance8_5) + # To bin 5
+                                                                                   (PythagDist + Distance8_4) + # To bin 4
+                                                                                   (PythagDist + Distance8_3) + # To bin 3
+                                                                                   (PythagDist + Distance8_2) + # To bin 2
+                                                                                   (PythagDist + Distance8_1)) / 7), # To bin 1
                                                                      0 # Else a zero value, which shouldn't exist
                                                               )))))))),
            ScaledDistMean = MeanDist / MaxDist, # Scaling worker average distance to all other bins
@@ -1711,10 +1777,8 @@ TubeDistances <- DistBinsFull %>% # Filtering out the Tube reference distances
 # Filtering out only distances for bin 1
 DistBin1 <- TubeDistances %>% 
   filter(Bin == 1) %>%
-  mutate(BinX = 3.75, # Create x reference column
-         BinY = 0, # Create y reference column
-         Dist1 = Distance) %>% # Set reference distance
-  select(Colony, Nest ,Dist1) # Select desired columns
+  mutate(Dist1 = Distance) %>% # Set reference distance
+  select(Colony, Nest, Dist1) # Select desired columns
 
 # Filtering and creating reference distances for bins 2 - 8
 # Bin 2
@@ -1768,18 +1832,27 @@ DistBin1_8Full <- full_join(DistBin1, DistBin2) %>%
   full_join(DistBin7) %>%
   full_join(DistBin8) %>%
   mutate(
-    Distance7_0 = Dist7, # Distance from bin 7 to 0
-    Distance3_0 = Dist3, # Distance from bin 4 to 0 
-    Distance8_7 = abs(Dist8 - Dist7), # Distance from bin 8 to 6 or 4 to 2 or 4 to 5  
-    Distance8_1 = abs(Dist8 - Dist1), # Distance from bin 8 to 1
-    Distance7_1 = abs(Dist7 - Dist1), # Distance from bin 7 to 1
-    Distance3_1 = abs(Dist3 - Dist1), # Distance from bin 4 to 1
-    Distance2_1 = abs(Dist2 - Dist1), # Distance from bin 3 to 1
-    Distance8_2 = abs(Dist8 - Dist2), # Distance from bin 8 to 2
-    Distance7_2 = abs(Dist7 - Dist2), # Distance from bin 7 to 2
-    Distance7_3 = abs(Dist7 - Dist3), # Distance from bin 7 to 3
-    Distance8_4 = abs(Dist8 - Dist3), # Distance from bin 8 to 4
-    Distance7_4 = abs(Dist7 - Dist3 - Distance8_7) # Distance from bin 7 to 4
+    Distance8_6 = abs(Dist8 - Dist7), # Distance from bin 8 to 6
+    Distance4_2 = Distance8_6, # Distance from bin 4 to 2
+    Distance3_5 = Distance8_6, # Distance from bin 3 to 5
+    Distance7_5 = Distance8_6, # Distance from bin 7 to 5 
+    Distance8_1 = abs(Dist8 - Dist2), # Distance from bin 8 to 1
+    Distance7_1 = abs(Dist7 - Dist2), # Distance from bin 7 to 1
+    Distance4_1 = abs(Dist4 - Dist2), # Distance from bin 4 to 1
+    Distance3_1 = abs(Dist3 - Dist2), # Distance from bin 3 to 1
+    Distance8_2 = abs(Dist8 - Dist3), # Distance from bin 8 to 2
+    Distance7_2 = abs(Dist7 - Dist3), # Distance from bin 7 to 2
+    Distance7_3 = abs(Dist7 - Dist4), # Distance from bin 7 to 3
+    Distance8_3 = abs(Dist8 - Dist4), # Distance from bin 8 to 3
+    Distance5_1 = abs(Distance4_1 + Distance8_6), # Distance from bin 5 to 1 
+    Distance6_1 = abs(Distance7_1 - Distance8_6), # Distance from bin 6 to 1
+    Distance5_6 = abs(Distance6_1 - Distance5_1), # Distance from bin 5 to 6 
+    Distance7_4 = abs(Distance7_3 - Distance8_6), # Distance from bin 7 to 4
+    Distance2_5 = abs(Distance8_6 * 2), # Distance from bin 2 to 5
+    Distance2_6 = abs(Distance2_5 + Distance5_6), # Distance from bin 2 to 6
+    Distance3_6 = abs(Distance8_6 + Distance5_6), # Distance from bin 3 to 6 
+    Distance8_4 = abs(Distance8_3 - Distance8_6), # Distance from bin 8 to 4
+    Distance8_5 = abs(Distance8_4 - Distance5_6), # Distance from bin 8 to 5
   )
 
 # Function that uses the data sets of individual or simulation distances to the entrance
@@ -1861,7 +1934,13 @@ WorkerToBroodFunction <- function(data.table) {
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
-    select(Colony, BinY4 ,Distance4)
+    select(Colony, BinY4, Distance4)
+  # Create the alternative bin 7 reference y coordinate
+  Bin7 <- DistBinsFull %>%
+    filter(Nest == "Tube" & Bin == 4) %>%
+    group_by(Colony) %>%
+    mutate(BinX7 = BinX) %>%
+    select(Colony, BinX7)
   
   # TUBE NEST
   DistanceToBroodWorkersTube <- data.table %>% # Full worker data set
@@ -1869,6 +1948,7 @@ WorkerToBroodFunction <- function(data.table) {
     left_join(MeanBroodCoordFullTube) %>% # Join the tube nest brood centroid data set
     left_join(DistBin1_8Full) %>% # Join the tube nest reference distance data set
     left_join(Bin4) %>%
+    left_join(Bin7) %>%
     drop_na() %>% # Drop any NAs
     group_by(Colony, Day) %>% # Group by the Colony and Day columns
     # Creating columns of reference distances from both the created distances and reference coordinates above 
@@ -1878,6 +1958,7 @@ WorkerToBroodFunction <- function(data.table) {
            DistanceX = ScaledX - BinX, # Distance from each individual's x coordinate to the x reference bin coordinate
            DistanceY = ScaledY - BinY, # Distance from each individual's y coordinate to the y reference bin coordinate
            DistanceY4 = ScaledY - BinY4, # Distance from each individual's y coordinate to the y reference bin 4 coordinate
+           DistanceX7 = ScaledX - BinX7, # Distance from each worker x coordinate to the second bin 6 and 7 x coordinate creating a direct path to bin 4 
            # Calculating the shortest distance from each individual to each nest section
            # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
            # A set of shortest distances are calculated for Bins towards and away from the nest entrance from the reference of each individual
@@ -1887,6 +1968,7 @@ WorkerToBroodFunction <- function(data.table) {
            PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                sqrt((DistanceX^2) + (DistanceY4^2)),
                                sqrt((DistanceX^2) + (DistanceY^2))),
+           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
            # Calculating the distance of each individual to the brood center
            # If the individual and brood centroid can be connected with a straight line, then this is done with the Pythagorean theorem 
            # If they aren't, the shortest distance to the bin closest to each other is calculated for each, than a reference distance is added where needed
@@ -1907,31 +1989,31 @@ WorkerToBroodFunction <- function(data.table) {
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(BroodY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance3_1)),
                                          ifelse(Bin == 4,
                                                 ifelse(ScaledX < BinXRef4_6,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1)),
                                                 # Bin 5
                                                 ifelse(Bin == 5,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        # Bin 6
                                                        ifelse(Bin == 6,
                                                               ifelse(BroodY > BinYRef2,
                                                                      PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                               # Bin 7
                                                               ifelse(Bin == 7,
                                                                      ifelse(ScaledY > BinYRef7,
                                                                             ifelse(BroodY > BinYRef2,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                                             ifelse(BroodY > BinYRef2,
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_1 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)))),
@@ -1971,7 +2053,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                                      # Bin 7
                                                                      ifelse(Bin == 7,
                                                                             ifelse(ScaledY > BinYRef7,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
                                                                             # Bin 8
                                                                             ifelse(Bin == 8,
@@ -1987,7 +2069,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(ScaledY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1)),
                                          # Bin 2
                                          ifelse(Bin == 2,
                                                 ifelse(BroodY < BinYRef3,
@@ -2010,10 +2092,10 @@ WorkerToBroodFunction <- function(data.table) {
                                                                             # Bin 7
                                                                             ifelse(Bin == 7,
                                                                                    ifelse(ScaledY > BinYRef7,
-                                                                                          PythagDist + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
-                                                                                          PythagDist + Distance7_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
+                                                                                          PythagDist4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance7_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
                                                                                    ifelse(Bin == 8,
-                                                                                          PythagDist + Distance8_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance8_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
                                                                                           NA)))))))),
                                   # Distances from workers to brood centroids in bin 4
                                   ifelse(BroodBin == 4,
@@ -2022,7 +2104,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                 ifelse(BroodX < BinXRef4_6,
                                                        ifelse(ScaledY > BinYRef2, 
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1),
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1),
                                                        ifelse(ScaledY > BinYRef2,
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
                                                               sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1)),
@@ -2052,7 +2134,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                                                                  PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                           # Bin 8
                                                                                           ifelse(Bin == 8,
-                                                                                                 PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
+                                                                                                 PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
                                                                                                  NA)))))))),
                                          # Distances from workers to brood centroids in bin 5
                                          ifelse(BroodBin == 5,
@@ -2083,7 +2165,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                                                                         PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                  # Bin 8
                                                                                                  ifelse(Bin == 8,
-                                                                                                        PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                        PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                         NA)))))))),
                                                 # Distances from workers to brood centroids in bin 6
                                                 ifelse(BroodBin == 6,
@@ -2114,7 +2196,7 @@ WorkerToBroodFunction <- function(data.table) {
                                                                                                                PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                         # Bin 8
                                                                                                         ifelse(Bin == 8,
-                                                                                                               PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                               PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                                NA)))))))),
                                                        # Distances from workers to brood centroids in bin 8, note that there weren't any brood centroids in bin 7, so it is skipped here
                                                        ifelse(BroodBin == 8,
@@ -2131,14 +2213,15 @@ WorkerToBroodFunction <- function(data.table) {
                                                                                    sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_4,
                                                                                    # Bin 4
                                                                                    ifelse(Bin == 4,
-                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                           # Bin 5
                                                                                           ifelse(Bin == 5,
-                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                                  # Bin 6
                                                                                                  ifelse(Bin == 6,
-                                                                                                        sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                                        # Bin 7
+                                                                                                        ifelse(ScaledX > BinXRef7,
+                                                                                                               sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)),
+                                                                                                               sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6),
                                                                                                         ifelse(Bin == 7,
                                                                                                                ifelse(ScaledY < BinYRef8,
                                                                                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
@@ -2199,14 +2282,22 @@ QueenToBroodFunction <- function(data.table){
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
-    select(Colony, BinY4 ,Distance4)
+    select(Colony, BinY4, Distance4)
+  
+  # Create the alternative bin 7 reference y coordinate
+  Bin7 <- DistBinsFull %>%
+    filter(Nest == "Tube" & Bin == 4) %>%
+    group_by(Colony) %>%
+    mutate(BinX7 = BinX) %>%
+    select(Colony, BinX7)
   
   # TUBE NEST
-  DistanceToBroodQueenTube <- data.table %>% # Full worker data set
+  DistanceToBroodQueenTube <- data.table %>% # Full queen data set
     filter(Nest == "Tube") %>% # Filter out tube nest shape
     left_join(MeanBroodCoordFullTube) %>% # Join the tube nest brood centroid data set
     left_join(DistBin1_8Full) %>% # Join the tube nest reference distance data set
     left_join(Bin4) %>%
+    left_join(Bin7) %>%
     drop_na() %>% # Drop any NAs
     group_by(Colony, Day) %>% # Group by the Colony and Day columns
     # Creating columns of reference distances from both the created distances and reference coordinates above 
@@ -2216,6 +2307,7 @@ QueenToBroodFunction <- function(data.table){
            DistanceX = ScaledX - BinX, # Distance from each individual's x coordinate to the x reference bin coordinate
            DistanceY = ScaledY - BinY, # Distance from each individual's y coordinate to the y reference bin coordinate
            DistanceY4 = ScaledY - BinY4, # Distance from each individual's y coordinate to the y reference bin 4 coordinate
+           DistanceX7 = ScaledX - BinX7, # Distance from each queen x coordinate to the second bin 6 and 7 x coordinate creating a direct path to bin 4 
            # Calculating the shortest distance from each individual to each nest section
            # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
            # A set of shortest distances are calculated for Bins towards and away from the nest entrance from the reference of each individual
@@ -2225,6 +2317,7 @@ QueenToBroodFunction <- function(data.table){
            PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                sqrt((DistanceX^2) + (DistanceY4^2)),
                                sqrt((DistanceX^2) + (DistanceY^2))),
+           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
            # Calculating the distance of each individual to the brood center
            # If the individual and brood centroid can be connected with a straight line, then this is done with the Pythagorean theorem 
            # If they aren't, the shortest distance to the bin closest to each other is calculated for each, than a reference distance is added where needed
@@ -2245,31 +2338,31 @@ QueenToBroodFunction <- function(data.table){
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(BroodY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance3_1)),
                                          ifelse(Bin == 4,
                                                 ifelse(ScaledX < BinXRef4_6,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1)),
                                                 # Bin 5
                                                 ifelse(Bin == 5,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        # Bin 6
                                                        ifelse(Bin == 6,
                                                               ifelse(BroodY > BinYRef2,
                                                                      PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                               # Bin 7
                                                               ifelse(Bin == 7,
                                                                      ifelse(ScaledY > BinYRef7,
                                                                             ifelse(BroodY > BinYRef2,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                                             ifelse(BroodY > BinYRef2,
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_1 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)))),
@@ -2309,7 +2402,7 @@ QueenToBroodFunction <- function(data.table){
                                                                      # Bin 7
                                                                      ifelse(Bin == 7,
                                                                             ifelse(ScaledY > BinYRef7,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
                                                                             # Bin 8
                                                                             ifelse(Bin == 8,
@@ -2325,7 +2418,7 @@ QueenToBroodFunction <- function(data.table){
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(ScaledY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1)),
                                          # Bin 2
                                          ifelse(Bin == 2,
                                                 ifelse(BroodY < BinYRef3,
@@ -2348,10 +2441,10 @@ QueenToBroodFunction <- function(data.table){
                                                                             # Bin 7
                                                                             ifelse(Bin == 7,
                                                                                    ifelse(ScaledY > BinYRef7,
-                                                                                          PythagDist + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
-                                                                                          PythagDist + Distance7_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
+                                                                                          PythagDist4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance7_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
                                                                                    ifelse(Bin == 8,
-                                                                                          PythagDist + Distance8_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance8_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
                                                                                           NA)))))))),
                                   # Distances from queens to brood centroids in bin 4
                                   ifelse(BroodBin == 4,
@@ -2360,7 +2453,7 @@ QueenToBroodFunction <- function(data.table){
                                                 ifelse(BroodX < BinXRef4_6,
                                                        ifelse(ScaledY > BinYRef2, 
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1),
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1),
                                                        ifelse(ScaledY > BinYRef2,
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
                                                               sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1)),
@@ -2390,7 +2483,7 @@ QueenToBroodFunction <- function(data.table){
                                                                                                  PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                           # Bin 8
                                                                                           ifelse(Bin == 8,
-                                                                                                 PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
+                                                                                                 PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
                                                                                                  NA)))))))),
                                          # Distances from queens to brood centroids in bin 5
                                          ifelse(BroodBin == 5,
@@ -2421,7 +2514,7 @@ QueenToBroodFunction <- function(data.table){
                                                                                                         PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                  # Bin 8
                                                                                                  ifelse(Bin == 8,
-                                                                                                        PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                        PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                         NA)))))))),
                                                 # Distances from queens to brood centroids in bin 6
                                                 ifelse(BroodBin == 6,
@@ -2452,7 +2545,7 @@ QueenToBroodFunction <- function(data.table){
                                                                                                                PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                         # Bin 8
                                                                                                         ifelse(Bin == 8,
-                                                                                                               PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                               PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                                NA)))))))),
                                                        # Distances from queens to brood centroids in bin 8, note that there weren't any brood centroids in bin 7, so it is skipped here
                                                        ifelse(BroodBin == 8,
@@ -2469,14 +2562,15 @@ QueenToBroodFunction <- function(data.table){
                                                                                    sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_4,
                                                                                    # Bin 4
                                                                                    ifelse(Bin == 4,
-                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                           # Bin 5
                                                                                           ifelse(Bin == 5,
-                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                                  # Bin 6
                                                                                                  ifelse(Bin == 6,
-                                                                                                        sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                                        # Bin 7
+                                                                                                        ifelse(ScaledX > BinXRef7,
+                                                                                                               sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)),
+                                                                                                               sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6),
                                                                                                         ifelse(Bin == 7,
                                                                                                                ifelse(ScaledY < BinYRef8,
                                                                                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
@@ -2503,7 +2597,7 @@ QueenToBroodFunction <- function(data.table){
     drop_na() # Remove NAs
   
   # CIRCLE NEST
-  DistanceToBroodQueenCircle <- data.table %>% # Full worker data set 
+  DistanceToBroodQueenCircle <- data.table %>% # Full queens data set 
     filter(Nest == "Circle") %>% # Filtering out circle nest coordinates
     left_join(MeanBroodCoordFullCircle) %>% # Joining the circle brood centroid data set
     group_by(Colony, Day) %>% # Group by the Colony and Day columns
@@ -2517,11 +2611,11 @@ QueenToBroodFunction <- function(data.table){
   # JOINING AND CREATING THE FINAL DATASETS
   BroodCentDistQueensRD1_RD2 <<- full_join(DistanceToBroodQueenTube, DistanceToBroodQueenCircle)
   
-  # Sub-setting the high density treatment worker data
+  # Sub-setting the high density treatment queen data
   BroodCentDistQueensRD1 <<- BroodCentDistQueensRD1_RD2 %>%
     filter(Colony < 11)
   
-  # Sub-setting the low density treatment worker data
+  # Sub-setting the low density treatment queen data
   BroodCentDistQueensRD2 <<- BroodCentDistQueensRD1_RD2 %>%
     filter(Colony > 10)
 }
@@ -2537,14 +2631,22 @@ AlateToBroodFunction <- function(data.table){
     group_by(Colony) %>% 
     mutate(BinY4 = BinY,
            Distance4 = Distance) %>% # The distance that is added to the Pythagorean distance is also different
-    select(Colony, BinY4 ,Distance4)
+    select(Colony, BinY4, Distance4)
+  
+  # Create the alternative bin 7 reference y coordinate
+  Bin7 <- DistBinsFull %>%
+    filter(Nest == "Tube" & Bin == 4) %>%
+    group_by(Colony) %>%
+    mutate(BinX7 = BinX) %>%
+    select(Colony, BinX7)
   
   # TUBE NEST
-  DistanceToBroodAlateTube <- data.table %>% # Full worker data set
+  DistanceToBroodAlateTube <- data.table %>% # Full alate data set
     filter(Nest == "Tube") %>% # Filter out tube nest shape
     left_join(MeanBroodCoordFullTube) %>% # Join the tube nest brood centroid data set
     left_join(DistBin1_8Full) %>% # Join the tube nest reference distance data set
     left_join(Bin4) %>%
+    left_join(Bin7) %>%
     drop_na() %>% # Drop any NAs
     group_by(Colony, Day) %>% # Group by the Colony and Day columns
     # Creating columns of reference distances from both the created distances and reference coordinates above 
@@ -2554,6 +2656,7 @@ AlateToBroodFunction <- function(data.table){
            DistanceX = ScaledX - BinX, # Distance from each individual's x coordinate to the x reference bin coordinate
            DistanceY = ScaledY - BinY, # Distance from each individual's y coordinate to the y reference bin coordinate
            DistanceY4 = ScaledY - BinY4, # Distance from each individual's y coordinate to the y reference bin 4 coordinate
+           DistanceX7 = ScaledX - BinX7, # Distance from each alate x coordinate to the second bin 6 and 7 x coordinate creating a direct path to bin 4 
            # Calculating the shortest distance from each individual to each nest section
            # This uses the Pythagorean theorem, which finds the hypotenuse through the formula sqrt((DistanceX^2) + (DistanceY^2))
            # A set of shortest distances are calculated for Bins towards and away from the nest entrance from the reference of each individual
@@ -2563,6 +2666,7 @@ AlateToBroodFunction <- function(data.table){
            PythagDist = ifelse(Bin == 4 & ScaledX < BinX, 
                                sqrt((DistanceX^2) + (DistanceY4^2)),
                                sqrt((DistanceX^2) + (DistanceY^2))),
+           PythagDist4 = sqrt((DistanceX7^2) + (DistanceY^2)), # Creates the shortest distance to bin 4
            # Calculating the distance of each individual to the brood center
            # If the individual and brood centroid can be connected with a straight line, then this is done with the Pythagorean theorem 
            # If they aren't, the shortest distance to the bin closest to each other is calculated for each, than a reference distance is added where needed
@@ -2583,31 +2687,31 @@ AlateToBroodFunction <- function(data.table){
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(BroodY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2)) + Distance3_1)),
                                          ifelse(Bin == 4,
                                                 ifelse(ScaledX < BinXRef4_6,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1)),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1)),
                                                 # Bin 5
                                                 ifelse(Bin == 5,
                                                        ifelse(BroodY > BinYRef2,
                                                               PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                              PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                        # Bin 6
                                                        ifelse(Bin == 6,
                                                               ifelse(BroodY > BinYRef2,
                                                                      PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                     PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                               # Bin 7
                                                               ifelse(Bin == 7,
                                                                      ifelse(ScaledY > BinYRef7,
                                                                             ifelse(BroodY > BinYRef2,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance2_1),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)) + Distance3_1),
                                                                             ifelse(BroodY > BinYRef2,
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_1 + sqrt(((BinXRef2 - BroodX)^2) + ((BinYRef2 - BroodY)^2)))),
@@ -2647,7 +2751,7 @@ AlateToBroodFunction <- function(data.table){
                                                                      # Bin 7
                                                                      ifelse(Bin == 7,
                                                                             ifelse(ScaledY > BinYRef7,
-                                                                                   PythagDist + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
+                                                                                   PythagDist4 + Distance3_4 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2)),
                                                                                    PythagDist + Distance7_2 + sqrt(((BinXRef3 - BroodX)^2) + ((BinYRef3 - BroodY)^2))),
                                                                             # Bin 8
                                                                             ifelse(Bin == 8,
@@ -2663,7 +2767,7 @@ AlateToBroodFunction <- function(data.table){
                                                        sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef2)^2) + ((BroodY - BinYRef2)^2))),
                                                 ifelse(ScaledY > BinYRef2,
                                                        sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1)),
+                                                       sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1)),
                                          # Bin 2
                                          ifelse(Bin == 2,
                                                 ifelse(BroodY < BinYRef3,
@@ -2686,10 +2790,10 @@ AlateToBroodFunction <- function(data.table){
                                                                             # Bin 7
                                                                             ifelse(Bin == 7,
                                                                                    ifelse(ScaledY > BinYRef7,
-                                                                                          PythagDist + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
-                                                                                          PythagDist + Distance7_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
+                                                                                          PythagDist4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance7_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2))),
                                                                                    ifelse(Bin == 8,
-                                                                                          PythagDist + Distance8_4 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
+                                                                                          PythagDist + Distance8_3 + sqrt(((BinXRef4_6 - BroodX)^2) + ((BinYRef4_6 - BroodY)^2)),
                                                                                           NA)))))))),
                                   # Distances from alates to brood centroids in bin 4
                                   ifelse(BroodBin == 4,
@@ -2698,7 +2802,7 @@ AlateToBroodFunction <- function(data.table){
                                                 ifelse(BroodX < BinXRef4_6,
                                                        ifelse(ScaledY > BinYRef2, 
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)),
-                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance2_1),
+                                                              sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef3)^2) + ((BroodY - BinYRef3)^2)) + Distance3_1),
                                                        ifelse(ScaledY > BinYRef2,
                                                               sqrt(((ScaledX - BinXRef3)^2) + ((ScaledY - BinYRef3)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_4,
                                                               sqrt(((ScaledX - BinXRef2)^2) + ((ScaledY - BinYRef2)^2)) + sqrt(((BroodX - BinXRef4_6)^2) + ((BroodY - BinYRef4_6)^2)) + Distance3_1)),
@@ -2728,7 +2832,7 @@ AlateToBroodFunction <- function(data.table){
                                                                                                  PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                           # Bin 8
                                                                                           ifelse(Bin == 8,
-                                                                                                 PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
+                                                                                                 PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)), 
                                                                                                  NA)))))))),
                                          # Distances from alates to brood centroids in bin 5
                                          ifelse(BroodBin == 5,
@@ -2759,7 +2863,7 @@ AlateToBroodFunction <- function(data.table){
                                                                                                         PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                  # Bin 8
                                                                                                  ifelse(Bin == 8,
-                                                                                                        PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                        PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                         NA)))))))),
                                                 # Distances from alates to brood centroids in bin 6
                                                 ifelse(BroodBin == 6,
@@ -2790,7 +2894,7 @@ AlateToBroodFunction <- function(data.table){
                                                                                                                PythagDist + sqrt(((BroodX - BinXRef7)^2) + ((BroodY - BinYRef7)^2))),
                                                                                                         # Bin 8
                                                                                                         ifelse(Bin == 8,
-                                                                                                               PythagDist + Distance8_7 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
+                                                                                                               PythagDist + Distance8_6 + sqrt(((BinXRef7 - BroodX)^2) + ((BinYRef7 - BroodY)^2)),
                                                                                                                NA)))))))),
                                                        # Distances from alates to brood centroids in bin 8, note that there weren't any brood centroids in bin 7, so it is skipped here
                                                        ifelse(BroodBin == 8,
@@ -2807,14 +2911,15 @@ AlateToBroodFunction <- function(data.table){
                                                                                    sqrt(((ScaledX - BinXRef4_6)^2) + ((ScaledY - BinYRef4_6)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_4,
                                                                                    # Bin 4
                                                                                    ifelse(Bin == 4,
-                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                          sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                           # Bin 5
                                                                                           ifelse(Bin == 5,
-                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
+                                                                                                 sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6,
                                                                                                  # Bin 6
                                                                                                  ifelse(Bin == 6,
-                                                                                                        sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_7,
-                                                                                                        # Bin 7
+                                                                                                        ifelse(ScaledX > BinXRef7,
+                                                                                                               sqrt(((ScaledX - BinXRef8)^2) + ((ScaledY - BinYRef8)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)),
+                                                                                                               sqrt(((ScaledX - BinXRef7)^2) + ((ScaledY - BinYRef7)^2)) + sqrt(((BroodX - BinXRef8)^2) + ((BroodY - BinYRef8)^2)) + Distance8_6),
                                                                                                         ifelse(Bin == 7,
                                                                                                                ifelse(ScaledY < BinYRef8,
                                                                                                                       sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)),
@@ -2836,7 +2941,7 @@ AlateToBroodFunction <- function(data.table){
     mutate(ToBrood = BroodDist / MaxDist, # Scale the shortest distance from each individual to the brood center
            ToBrood = ifelse(ToBrood > 1, 1, ToBrood)) %>% # As a precaution, if any scaled distances are greater than 1, the value is converted to 1
     left_join(CornerFull) %>% # Join with data set that associates nest sections with the presence of a corner or not.
-    select(Colony, Nest, Day, ScaledX, ScaledY, Density, Corner, Bin, ToBrood) %>% # Select the desired columns
+    select(Colony, Nest, Day, ScaledX, ScaledY, Density, Corner, Bin, ToBrood, Sex, Ratio) %>% # Select the desired columns
     distinct() %>% # Remove any duplicates (shouldn't exist)
     drop_na() # Remove NAs
   
@@ -2848,7 +2953,7 @@ AlateToBroodFunction <- function(data.table){
     mutate(BroodDist = sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)), # Shortest distance from each individual to the brood center
            ToBrood = BroodDist / MaxDist) %>% # Select the desired columns 
     left_join(CornerFull) %>% # Join with data set that associates nest sections with the presence of a corner or not.
-    select(Colony, Nest, Day, ScaledX, ScaledY, Density, Corner, Bin, ToBrood) %>% # Select the desired columns
+    select(Colony, Nest, Day, ScaledX, ScaledY, Density, Corner, Bin, ToBrood, Sex, Ratio) %>% # Select the desired columns
     distinct() %>% # Remove any duplicates (shouldn't exist)
     drop_na() # Remove NAs
   
@@ -2857,4 +2962,5 @@ AlateToBroodFunction <- function(data.table){
 }
 
 # Run the alate distance to the brood center function for the FullDataCoordAlate data set
-AlateToBroodFunction(FullDataCoordAlate)
+AlateToBroodFunction(FullDataCoordAlates)
+
