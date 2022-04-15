@@ -5248,10 +5248,9 @@ SFZDataFullZones <-
 # Next, we categorize spatial fidelity zones as zones having at least 15% of the total observations, where all obversations are included in the occurrence zone
 # Last, each zone size is calculated by adding the number of zones in each category and multiplying that value by 1/24 the area of the nest 
 ####################################################################################################################
-
 FidelityZones <- function(data_table){
   # Joining the area reference data set
-  FidelityZonesDataRaw <<- left_join(data_table, NestAreaFull) %>%
+  FidelityZonesDataRaw <- left_join(data_table, NestAreaFull) %>%
     # Creating a column filled with 1s
     mutate(ColorIDNum = 1) %>%
     # Group by the Colony, Nest, Day, and ColorID columns
@@ -5272,23 +5271,25 @@ FidelityZones <- function(data_table){
     # Count the number of observations in each group
     mutate(ZoneCount = n(),
            # Calculating the proportion of color ID observations in each observed zone 
-           PropSFZ = (ZoneCount / (Freq))) %>%
+           PropSFZ = (ZoneCount / Freq)) %>%
     select(-c(Day, ScaledX, ScaledY)) %>%
     # Remove any duplicates - i.e., days 2 and 10 can have two observations in zone 5, so there will be duplicate values of PropSFZ
     distinct() %>%
-    # Determining whether the zone has at least 15% of total observations or not
-    # If so, the zone will be included in fidelity zone
-    mutate(FullZone = 1, FidZone = ifelse(PropSFZ >= 0.15, 1, 0)) %>%
     # Group by the Colony, Nest, and ColorID columns
     group_by(Colony, Nest, ColorID) %>%
-    # Calculating the zone sizes
-    mutate(Occur = ((Area / 24) * sum(FullZone)) / Area, # Scaled occurrence zones
-           SFZ = ((Area / 24) * sum(FidZone)) / Area, # Scaled spatial fidelity zones
-           Occur_Area = ((Area / 24) * sum(FullZone)), # Unscaled occurrence zones
-           SFZ_Area = ((Area / 24) * sum(FidZone)), # Unscaled spatial fidelity zones
+    # Determining whether the zone has at least 15% of total observations or not
+    # If so, the zone will be included in fidelity zone
+    mutate(FullZone = 1, 
+           FidZone = ifelse(PropSFZ >= 0.15, 1, 0), 
+           # Calculating the zone sizes
+           Occur = sum(FullZone) / 24, # Scaled occurrence zones
+           SFZ = sum(FidZone) / 24, # Scaled spatial fidelity zones
+           Occur_Area = (Area * Occur), # Unscaled occurrence zones
+           SFZ_Area = (Area * SFZ), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq)
+    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq) %>%
+    distinct()
   
   # Final data set
   FidelityZonesDataRD1_RD2 <<- left_join(data_table, FidelityZonesDataRaw) %>%
@@ -5642,8 +5643,8 @@ DistBin1_8Full <- full_join(DistBin1, DistBin2) %>%
     Distance2_6 = abs(Distance2_5 + Distance5_6), # Distance from bin 2 to 6
     Distance3_6 = abs(Distance8_6 + Distance5_6), # Distance from bin 3 to 6 
     Distance8_4 = abs(Distance8_3 - Distance8_6), # Distance from bin 8 to 4
-    Distance8_5 = abs(Distance8_4 - Distance5_6), # Distance from bin 8 to 5
-  )
+    Distance8_5 = abs(Distance8_4 - Distance5_6) # Distance from bin 8 to 5
+    )
 
 # Function that uses the data sets of individual or simulation distances to the entrance
 # The function uses these distances and either adds or subtracts reference distances to obtain the shortest distance to each nest section

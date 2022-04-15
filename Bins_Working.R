@@ -1971,9 +1971,8 @@ FullDataCoordWorkers <- Colony1Binned %>%
   full_join(Colony9Binned) %>%
   full_join(Colony10Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Workers" & Colony < 11) %>%
+  filter(ColonyMember == "Workers" & Colony < 11) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID, Density)
-
 
 # Combine all data sets into the final one for workers, colonies 11-20
 # This is because functions in other scripts keep colonies 1-10 (high nest density) and 11-20 (low nest density) separate
@@ -1988,7 +1987,7 @@ FullDataCoordWorkersRD2 <- Colony11Binned %>%
   full_join(Colony19Binned) %>%
   full_join(Colony20Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Workers" & Colony > 10) %>%
+  filter(ColonyMember == "Workers" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID, Density)
 
 # Join all data
@@ -2007,7 +2006,7 @@ FullDataCoordBrood <- Colony1Binned %>%
   full_join(Colony9Binned) %>%
   full_join(Colony10Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Brood" & Colony < 11) %>%
+  filter(ColonyMember == "Brood" & Colony < 11) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
 
 # Combine all data sets into the final one for brood, colonies 11-20
@@ -2023,7 +2022,7 @@ FullDataCoordBroodRD2 <- Colony11Binned %>%
   full_join(Colony19Binned) %>%
   full_join(Colony20Binned) %>%
   #Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Brood" & Colony > 10) %>%
+  filter(ColonyMember == "Brood" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
 
 # Join all data
@@ -2042,7 +2041,7 @@ FullDataCoordQueen <- Colony1Binned %>%
   full_join(Colony9Binned) %>%
   full_join(Colony10Binned) %>%
   #Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Queens" & Colony < 11) %>%
+  filter(ColonyMember == "Queens" & Colony < 11) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
 
 # Combine all data sets into the final one for queens, colonies 11-20
@@ -2058,7 +2057,7 @@ FullDataCoordQueenRD2 <- Colony11Binned %>%
   full_join(Colony19Binned) %>%
   full_join(Colony20Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0, ColonyMember == "Queens" & Colony > 10) %>%
+  filter(ColonyMember == "Queens" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Density)
 
 # Join all data
@@ -2074,7 +2073,7 @@ FullDataCoordAlates <- Colony11Binned %>%
   full_join(Colony18Binned) %>%
   full_join(Colony19Binned) %>%
   # Remove all of the zeros, since some coordinates exist that may be accidental or error. 
-  filter(Bin != 0 & ColonyMember == "Alates" & Colony > 10) %>%
+  filter(ColonyMember == "Alates" & Colony > 10) %>%
   select(Colony, Nest, Day, ScaledX, ScaledY, Bin, Sex, Ratio)
 
 ####################################################################################################################
@@ -2521,4 +2520,3 @@ Prop_functionWorkerSim <- function(data.table) {
 
 # Run the Prop_functionWorkerSim function for the NetlogoBinnedFull data set 
 Prop_functionWorkerSim(NetlogoBinnedFull)
-
