@@ -5265,7 +5265,7 @@ FidelityZones <- function(data_table){
     # Finding the frequency of the color ID in each group
     mutate(Freq = sum(ColorIDNum)) %>%
     # Removing all color IDs with fewer than three observations
-    filter(Freq > 2) %>%
+    filter(Freq > 6) %>%
     # Group by the Colony, Nest, ColorID, and Zone columns
     group_by(Colony, Nest, ColorID, Zone) %>%
     # Count the number of observations in each group
@@ -5282,13 +5282,13 @@ FidelityZones <- function(data_table){
     mutate(FullZone = 1, 
            FidZone = ifelse(PropSFZ >= 0.15, 1, 0), 
            # Calculating the zone sizes
-           Occur = sum(FullZone) / 24, # Scaled occurrence zones
-           SFZ = sum(FidZone) / 24, # Scaled spatial fidelity zones
-           Occur_Area = (Area * Occur), # Unscaled occurrence zones
-           SFZ_Area = (Area * SFZ), # Unscaled spatial fidelity zones
+           Occur = sum(FullZone), # Scaled occurrence zones
+           SFZ = sum(FidZone), # Scaled spatial fidelity zones
+           Occur_Area = Area * (Occur / 24), # Unscaled occurrence zones
+           SFZ_Area = Area * (SFZ / 24), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq) %>%
+    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
     distinct()
   
   # Final data set
@@ -5442,19 +5442,15 @@ DistanceCoordsFunctionSFZ<-function(data.table){
     mutate(ScaledDist = DistanceTotal / (MaxDist),
            ScaledDist = ifelse(ScaledDist > 1, 1, ScaledDist))%>%
     ungroup()%>%
-    select(Colony, Nest, ColorID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area, Freq) %>%
+    select(Colony, Nest, ColorID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area, Freq, Number.ants) %>%
     distinct()
 
   # Contains all mean distances
   WorkerDistScaledRD1_RD2SFZWorking <<- WorkerDistScaledRD1_RD2SFZFull %>%
     group_by(Colony, Nest, ColorID) %>%
     mutate(MeanScaledDist = mean(ScaledDist)) %>%
-    select(Colony, Nest, ColorID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area, Freq)%>%
+    select(Colony, Nest, ColorID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area, Freq, Number.ants)%>%
     distinct()
-  
-  # Contains the mean distances, but has only spatial fidelity zones > 0
-  WorkerDistScaledRD1_RD2SFZWorkingFid <<- WorkerDistScaledRD1_RD2SFZWorking %>%
-    filter(SFZ > 0) 
 }
 
 # Run the mean distance to the nest entrance function for the color marked worker data set FidelityZonesDataRD1_RD2
@@ -6052,10 +6048,6 @@ BroodCentDistWorkersSFZ <<- full_join(DistanceToBroodSFZTube, DistanceToBroodSFZ
   mutate(MeanToBrood = mean(ToBrood)) %>%
   select(-c(Day, ScaledX, ScaledY, ToBrood)) %>%
   distinct()
-
-BroodCentDistWorkersSFZFid <<- BroodCentDistWorkersSFZ %>%
-  filter(SFZ > 0) 
-
 }
 
 # Run the mean distance to the brood center for the color marked workers data set FidelityZonesDataRD1_RD2
