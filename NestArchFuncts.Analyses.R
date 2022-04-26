@@ -14,30 +14,6 @@
 # (2) DistanceFunctions.R - Distance to the nest entrance for all data, mobile colony member distance to the brood center, worker distance to all nest sections but their own
 # (3) SFZFunctions.R - Paint-marked worker site fidelity zones
 
-install.packages("pacman") # Download package with function to load multiple packaged at once
-####################################################################################################################
-# Loading required packages for code below  
-# p_load() will download packages that aren't in system library
-####################################################################################################################
-
-pacman::p_load(tidyverse, 
-               forcats,
-               formattable,
-               ggpubr,
-               ggdist,
-               lme4,
-               lmerTest,
-               magick,
-               magrittr,
-               MuMIn,
-               tidyverse,
-               wesanderson,
-               twosamples,
-               ggpointdensity,
-               scales,
-               viridis)
-install.packages("easystats", repos = "https://easystats.r-universe.dev")
-library(easystats)
 ####################################################################################################################
 # SUBSETTING / COMPARING EMPIRICAL & NETLOGO SIMULATION DISTRIBUTIONS
 # The below script separates the empirical worker and Netlogo simulated data sets so that each combination of nest, density treatment can be pairwise compared

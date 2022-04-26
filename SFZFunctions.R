@@ -19,9 +19,6 @@
 # COLOR REFRENCE DATA SET
 ColorRefFull <- read.csv("ColorRefFull.csv")
 
-# DISTANCE TO NEST ENTRANCE (EMPIRICAL) REFERENCES
-DistBinsFull <- read.csv("DistBinsFull.csv")
-
 # NEST AREA REFERENCES
 NestAreaFull <- read.csv("NestAreaFull.csv")
 
@@ -5288,7 +5285,7 @@ FidelityZones <- function(data_table){
            SFZ_Area = Area * (SFZ / 24), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
+    select(Colony, Nest, ColorID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
     distinct()
   
   # Final data set
@@ -6052,3 +6049,67 @@ BroodCentDistWorkersSFZ <<- full_join(DistanceToBroodSFZTube, DistanceToBroodSFZ
 
 # Run the mean distance to the brood center for the color marked workers data set FidelityZonesDataRD1_RD2
 DistanceToBroodSFZFunction(FidelityZonesDataRD1_RD2)
+
+####################################################################################################################
+# SUPPLEMENTARY FOR NUMBER OF OBSERVATIONS & SITE FIDELITY FIGURE 
+# SPATIAL FIDELITY & OCCURRENCE ZONE CALCULATIONS
+# The following functions are the site fidelity calculations
+# The function uses a nest area reference and the color coordinate data set created above
+# First, the reference data set is joined and a new column is created with a 1
+# Then, we find the frequency of the color coordinate for the colony in each nest
+# We require at least 3 observations of the color ID
+# Next, we categorize spatial fidelity zones as zones having at least 15% of the total observations, where all obversations are included in the occurrence zone
+# Last, each zone size is calculated by adding the number of zones in each category and multiplying that value by 1/24 the area of the nest 
+####################################################################################################################
+FidelityZonesSupp <- function(data_table){
+  # Joining the area reference data set
+  FidelityZonesDataRaw <- left_join(data_table, NestAreaFull) %>%
+    # Creating a column filled with 1s
+    mutate(ColorIDNum = 1) %>%
+    # Group by the Colony, Nest, Day, and ColorID columns
+    group_by(Colony, Nest, Day, ColorID) %>%
+    # Count the number of each group
+    mutate(count = n()) %>%
+    # There should only be one observation of each color ID
+    # If this isn't true we don't want the color ID in case of error
+    filter(count == 1) %>%
+    # Group by the Colony, Nest, and ColorID columns
+    group_by(Colony, Nest, ColorID) %>%
+    # Finding the frequency of the color ID in each group
+    mutate(Freq = sum(ColorIDNum)) %>%
+    # Removing all color IDs with fewer than three observations
+    filter(Freq > 2) %>%
+    # Group by the Colony, Nest, ColorID, and Zone columns
+    group_by(Colony, Nest, ColorID, Zone) %>%
+    # Count the number of observations in each group
+    mutate(ZoneCount = n(),
+           # Calculating the proportion of color ID observations in each observed zone 
+           PropSFZ = (ZoneCount / Freq)) %>%
+    select(-c(Day, ScaledX, ScaledY)) %>%
+    # Remove any duplicates - i.e., days 2 and 10 can have two observations in zone 5, so there will be duplicate values of PropSFZ
+    distinct() %>%
+    # Group by the Colony, Nest, and ColorID columns
+    group_by(Colony, Nest, ColorID) %>%
+    # Determining whether the zone has at least 15% of total observations or not
+    # If so, the zone will be included in fidelity zone
+    mutate(FullZone = 1, 
+           FidZone = ifelse(PropSFZ >= 0.15, 1, 0), 
+           # Calculating the zone sizes
+           Occur = sum(FullZone), # Scaled occurrence zones
+           SFZ = sum(FidZone), # Scaled spatial fidelity zones
+           Occur_Area = Area * (Occur / 24), # Unscaled occurrence zones
+           SFZ_Area = Area * (SFZ / 24), # Unscaled spatial fidelity zones
+           Density = ifelse(Colony < 11, "High", "Low")) %>%
+    # Select the desired columns
+    select(Colony, Nest, ColorID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
+    distinct()
+  
+  # Final data set
+  FidelityZonesDataRD1_RD2Supp <<- left_join(data_table, FidelityZonesDataRaw) %>%
+    select(Colony, Nest, ColorID, Density, SFZ, Occur, Freq) %>%
+    distinct() %>%
+    drop_na()
+}
+
+# Running the site fidelity calculation function on the SFZDataFullZones data set
+FidelityZonesSupp(SFZDataFullZones)

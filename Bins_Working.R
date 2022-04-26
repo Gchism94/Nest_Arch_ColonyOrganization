@@ -18,21 +18,19 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(assertthat,
-               forcats,
+pacman::p_load(forcats,
+               formattable,
                ggpointdensity,
                ggpubr,
                lme4,
                lmerTest,
-               magick,
                magrittr,
                MuMIn,
                RColorBrewer,
                scales,
                tidyverse,
                twosamples,
-               viridis,
-               wesanderson)
+               viridis)
 
 ####################################################################################################################
 # IMPORT ALL NECESSARY DATASETS 
