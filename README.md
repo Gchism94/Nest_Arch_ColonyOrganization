@@ -23,6 +23,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 ***
 
 ## Structure of the data
+### EMPIRICAL DATA
 #### WORKERS: FullDataCoordWorkers.csv, FullDataCoordWorkersRD2.csv
 ###### Raw experimental data with worker x and y position in nests
 * Colony: Unique experimental colony identifiers
@@ -65,3 +66,52 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 * TimeStep: The duration of each simulation (should be 50000)
 * xcor: a list of every agent x coordinate position at the end of the simulation
 * ycor: a list of every agent y coordinate position at the end of the simulation
+
+*** 
+
+### REFERENCE DATA
+#### NEST BINS: Empirical
+##### BinsNullFull
+###### Null data sheet with eight bins for tube and circle nests in every colony
+* Colony: Unique experimental colony identifiers
+* Nest: The nest shape treatment (Tube / Circle)
+* Bin: Nest section identifier (1-8)
+
+***
+
+##### BinCoordFull
+###### Reference binning coordinates to group empirical coordinates into nest sections
+* Colony: Unique experimental colony identifiers
+* Nest: The nest shape treatment (Tube / Circle)
+* CoordID: The unique coordinate identifier within each colony and nest combination
+* ScaledX: X-axis coordinate, scaled from original (px) to (cm) in the software Fiji (Schindelin et al., 2012)
+* ScaledY: Y-axis coordinate, scaled from original (px) to (cm) in the software Fiji 
+
+***
+
+#### NEST BINS: Netlogo Simulations
+##### BinsNullNetlogo
+###### Null data sheet with eight bins for tube and circle nests in each simulation treatment
+* Nest: The nest shape treatment (Tube / Circle)
+* NestSize: The size treatment for simulations (Small / Large)
+* Bin: Nest section identifier (1-8)
+
+***
+
+##### BinCoordNetlogo 
+###### Reference binning coordinates to group Netlogo simulation coordinates into nest sections
+* Nest: The nest shape treatment (Tube / Circle)
+* NestSize: The size treatment for simulations (Small / Large)
+* ScaledX: X-axis coordinate
+* ScaledY: Y-axis coordinate
+* CoordID: The unique coordinate identifier within each colony and nest combination
+
+***
+
+#### CORNERS: Empirical
+##### CornerFull.csv
+###### Whether a nest section has a corner or not
+* Colony: Unique experimental colony identifiers
+* Nest: The nest shape treatment (Tube / Circle)
+* Bin: Nest section identifier (1-8)
+* Corner: Presence of a corner (Y / N)
