@@ -15,6 +15,193 @@
 # (3) SFZFunctions.R - Paint-marked worker site fidelity zones
 
 ####################################################################################################################
+# COLONY MEMBER SCATTERPLOTS
+# The below script produces the colony member density plots
+# Each scatter plot colors the points by K-nearest neighbors, which is defined by how many points are in proximity to one another
+# First the scatter plots for the Netlogo simulation results are created, then each colony's worker, brood, queen, and alate (low nest density only) are created
+# Each combined plot is assigned to an object that can be run to view 
+####################################################################################################################
+
+# SIMULATION SCATTERPLOTS
+# High density treatment
+# Note that the data table has the ScaledDist column which is used here to remove points at the very back of the nest for the Netlogo simulation scatter plot 
+# Without these points being removed the back of the nest overlaps into the first nest section visually
+# This correction is not used in any of the other plots and represents a very small portion of the data points
+SmallRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Small" & ScaledDist < 0.995),
+                               aes(ScaledX, ScaledY)) +
+  geom_pointdensity() +
+  scale_color_viridis() +
+  coord_fixed() +
+  theme_pubclean() +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Random walk") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
+  facet_wrap(~ Nest) +
+  labs(color = "KNN") +
+  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
+                                  barwidth = unit(7.5, "cm"),
+                                  even.steps = FALSE,
+                                  frame.colour = "black")) +
+  xlim(0, 7.5) +
+  ylim(-0.25, 5) 
+
+# Low density treatment
+# Note that the data table has the ScaledDist column which is used here to remove points at the very back of the nest for the Netlogo simulation scatter plot 
+# Without these points being removed the back of the nest overlaps into the first nest section visually
+# This correction is not used in any of the other plots and represents a very small portion of the data points
+LargeRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Large" & ScaledDist < 0.995),
+                               aes(ScaledX, ScaledY)) +
+  geom_pointdensity() +
+  scale_color_viridis() +
+  coord_fixed() +
+  theme_pubclean() +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Random walk") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
+  facet_wrap(~ Nest) +
+  labs(color = "KNN") +
+  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
+                                  barwidth = unit(7.5, "cm"),
+                                  even.steps = FALSE,
+                                  frame.colour = "black")) +
+  xlim(0, 7.5) +
+  ylim(-0.25, 5)
+
+# EMPIRICAL SCATTERPLOTS
+# Below are the colony member scatter plots for every colony
+
+# MAIN MANUSCRIPT FIGURE
+# This figure is the same a colony 11 in the supplementaty figures below
+# WORKERS
+WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony == 11),
+                              aes(ScaledX, ScaledY)) +
+  geom_pointdensity(alpha = 0.75) +
+  scale_color_viridis() +
+  coord_fixed() +
+  theme_pubclean() +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Workers") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
+  labs(color = "KNN") +
+  facet_wrap(~ Nest) +
+  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
+                                  barwidth = unit(7.5, "cm"),
+                                  even.steps = FALSE,
+                                  frame.colour = "black")) +
+  xlim(0, 7.5) +
+  ylim(-0.25, 5) 
+
+# BROOD 
+BroodDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colony == 11),
+                                  aes(ScaledX, ScaledY)) +
+  geom_pointdensity(alpha = 0.75) +
+  scale_color_viridis() +
+  coord_fixed() +
+  theme_pubclean() +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Brood") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
+  labs(color = "KNN")+
+  facet_wrap(~ Nest) +
+  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
+                                  barwidth = unit(7.5, "cm"),
+                                  even.steps = FALSE,
+                                  frame.colour = "black")) +
+  xlim(0, 7.5) +
+  ylim(-0.25, 5) 
+
+# ALATE SCATTERPLOTS ONLY IN THE FOLLOWING COLONIES
+#   |  Colony |
+#   |  11     |
+#   |  12     |
+#   |  13     |
+#   |  14     |
+#   |  15     |
+#   |  18     |
+#   |  19     |
+
+AlateQueenDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
+                       aes(ScaledX, ScaledY)) +
+  geom_pointdensity(alpha = 0.75) +
+  geom_point(data = QueenDistScaledRD1_RD2 %>% filter(Colony == 11),
+             aes(ScaledX, ScaledY), alpha = 0.75, color = "red2", size = 2, shape = 17) +
+  scale_color_viridis() +
+  coord_fixed() +
+  theme_pubclean() +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Alates & Queens") +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 18, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
+  facet_wrap(~ Nest) +
+  labs(color = "KNN")+
+  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
+                                  barwidth = unit(7.5, "cm"),
+                                  even.steps = FALSE,
+                                  frame.colour = "black")) +
+  xlim(0, 7.5)+
+  ylim(-0.25, 5) 
+
+# Compiling the colony 11 worker, brood & queen scatter plots with the low density simulation scatter plot
+FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
+                             AlateDensity, 
+                             LargeRandWalkDensity,
+                             font.label = list(size = 18, face = "plain"),
+                             ncol = 2, nrow = 2,
+                             widths = 0.05,
+                             vjust = 1.85,
+                             label.x = 0.85)
+
+# Assigning the compiled plot to an object, which will be used below 
+DensityPlotColony <- FullDensityPlot
+
+# Save plot as a PDF
+ggsave(file = "Fig2.pdf", plot = DensityPlotColony, width = 9.375, height = 6.77, units = "in")
+
+####################################################################################################################
 # SUBSETTING / COMPARING EMPIRICAL & NETLOGO SIMULATION DISTRIBUTIONS
 # The below script separates the empirical worker and Netlogo simulated data sets so that each combination of nest, density treatment can be pairwise compared
 # Distributions are compared using Cramer von mises tests, which compare points across entire distributions
@@ -421,13 +608,16 @@ WorkerPropPlotAnnotFull <- ggarrange(WorkerPropPlotAnnot, WorkerPropPlotAnnot2,
                              common.legend = FALSE)
 
 # Annotating the compiled plot to include shared axes lables
-annotate_figure(WorkerPropPlotAnnotFull,
+WorkerPropPlot <- annotate_figure(WorkerPropPlotAnnotFull,
                          top = NULL,
                          bottom = text_grob("Nest section", color = "black",
                                             size = 18, x = 0.5),
                          left = text_grob("Proportions of workers", color = "black",
                                           size = 18, rot = 90),
                          right = NULL)
+
+# Save plot as a PDF
+ggsave(file = "Fig3.pdf", plot = WorkerPropPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR REGRESSION: observed & simulated workers
 # RESPONSE VARIABLE
@@ -527,7 +717,7 @@ MaxLogPlot <- ggarrange(MaxLog1, MaxLog2,
                         common.legend = FALSE)
 
 # Annotating the compiled GLM line plots to include shared axes labels
-annotate_figure(MaxLogPlot,
+MaxWorkerProp <- annotate_figure(MaxLogPlot,
                                   top = NULL,
                                   bottom = text_grob("Nest section", color = "black",
                                                      size = 18),
@@ -535,6 +725,9 @@ annotate_figure(MaxLogPlot,
                                                    size = 18, rot = 90),
                                   right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig_A10.pdf", plot = MaxWorkerProp, width = 10.4, height = 7.3, units = "in")
 
 # GENERALIZED LINEAR REGRESSION (BINOMIAL FIT): Max worker and Netlogo simulation proportions in nest sections
 # RESPONSE VARIABLE
@@ -700,11 +893,6 @@ QueenPropPlotFull <- annotate_figure(QueenPropPlot,
                 right = NULL
 )
 
-# Compiling the brood and queen densities in nest sections plots
-ggarrange(BroodPropPlotFull, QueenPropPlotFull,
-          ncol = 1, nrow = 2,
-          common.legend = TRUE)
-
 # LINEAR MIXED EFFECTS MODEL: Queen density through the nest
 # RESPONSE VARIABLE
 # PropWorker - Proportion of total brood found in each nest section
@@ -750,18 +938,28 @@ AlatePropPlot <- ggarrange(AlatePropFig,
                            font.label = list(size = 18, face = "plain"),
                            label.x = 0.9,
                            label.y = 1.0325,
-                           ncol = 1, nrow = 1)
+                           ncol = 2, nrow = 1)
 
 # Annotating the alate proportions boxplot to include a title
-annotate_figure(AlatePropPlot,
-                                   top = text_grob("Alates", 
-                                                   color = "black", 
-                                                   size = 18, 
-                                                   x = 0.15, y = 0),
+AlateProp <- annotate_figure(AlatePropPlot,
+                             top = text_grob("Alates", color = "black", 
+                                             size = 18, 
+                                             x = 0.0625, y = 0),
                                    bottom = NULL,
                                    left = NULL,
                                    right = NULL
 )
+
+
+# Compiling the brood and queen densities in nest sections plots
+BroodQueenAlateProp <- ggarrange(BroodPropPlotFull, QueenPropPlotFull,
+                                 AlateProp, 
+                            ncol = 1, nrow = 3,
+                            common.legend = TRUE)
+
+
+# Save plot as a PDF
+ggsave(file = "Fig4.pdf", plot = BroodQueenAlateProp, width = 10.4, height = 19.6, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Observed worker density through the nest
 # RESPONSE VARIABLE
@@ -928,13 +1126,16 @@ FullDistPlot <- ggarrange(WorkerDistPlotFull, WorkerSimPlotFull,
                         common.legend = FALSE)
 
 # Annotating the compiled histograms to include common axes labels 
-annotate_figure(FullDistPlot,
+WorkerSimDistPlot <- annotate_figure(FullDistPlot,
                 top = NULL,
                 bottom = text_grob("Scaled distance to nest entrance", color = "black",
                                    size = 18),
                 left = NULL,
                 right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig5.pdf", plot = WorkerSimDistPlot, width = 10.4, height = 10.4, units = "in")
 
 # Combining the empirical and Netlogo simulated worker distances from the nest entrance data sets
 AllDistScaledRD1_RD2 <- SimDistScaled %>%
@@ -1119,18 +1320,6 @@ QueenFullDist <- annotate_figure(QueenDistPlot,
                                right = NULL
 )
 
-# Compiling the brood and queen scaled distance to the nest entrance plots
-BroodQueenDist <- ggarrange(BroodFullDist, QueenFullDist,
-          ncol = 1, nrow = 2)
-
-
-annotate_figure(BroodQueenDist,
-                top = NULL,
-                bottom = text_grob("Scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
-)
 
 # LINEAR MIXED EFFECTS MODEL: Queen scaled distances from the nest entrance
 # RESPONSE VARIABLE
@@ -1208,14 +1397,23 @@ AlateDistPlot <- ggarrange(AlateDist1, AlateDist2,
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
-# Annotating the compiled plots to include a title
-annotate_figure(AlateDistPlot,
-                top = text_grob("Alates", color = "black",
-                                size = 18, x = 0.06, y = -1.30),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
+# Annotating the compiled plots to include a common y axis and title
+AlateFullDist <- annotate_figure(AlateDistPlot,
+                                      top = text_grob("Alates", color = "black",
+                                                      size = 18, x = 0.06, y = -0.75),
+                                      bottom = NULL,
+                                      left = NULL,
+                                      right = NULL
 )
+
+# Compiling the brood and queen densities in nest sections plots
+BroodQueenAlateDist <- ggarrange(BroodFullDist, QueenFullDist,
+                                 AlateFullDist, 
+                                 ncol = 1, nrow = 3,
+                                 common.legend = TRUE)
+
+# Save plot as a PDF
+ggsave(file = "Fig6.pdf", plot = BroodQueenAlateDist, width = 10.4, height = 19.6, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Alate scaled distances from the nest entrance
 # RESPONSE VARIABLE
@@ -1305,7 +1503,7 @@ WorkerBroodDistPlot <- ggarrange(WorkerBroodDist1, WorkerBroodDist2,
                                  common.legend = FALSE)
 
 #Annotating the compiled plot to include a common y axis and title
-WorkerFullBroodDist <- annotate_figure(WorkerBroodDistPlot,
+WorkerBroodFullDist <- annotate_figure(WorkerBroodDistPlot,
                                        top = text_grob("Workers", color = "black",
                                                        size = 18, x = 0.06, y = -0.675),
                                        bottom = NULL,
@@ -1392,18 +1590,6 @@ QueenBroodFullDist <- annotate_figure(QueenBroodDistPlot,
                                       right = NULL
 )
 
-# Compiling the Worker and queen scaled distance to the brood center
-WorkerQueenBroodDist <- ggarrange(WorkerFullBroodDist, QueenBroodFullDist,
-                          ncol = 1, nrow = 2)
-
-# Annotating the compiled plot to include a common x axis
-annotate_figure(WorkerQueenBroodDist,
-                top = NULL,
-                bottom = text_grob("Scaled distance to brood center", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
-)
 
 # LINEAR MIXED EFFECTS MODEL: Queen scaled distances to the brood center
 # RESPONSE VARIABLE
@@ -1473,7 +1659,7 @@ AlateBroodPlot2 <- ggplot(BroodCentDistAlatesRD2Plot %>% arrange(Nest),
   ylab("Scaled distance to brood center")
 
 # Compiling the alate distance to the the brood center plots 
-AlateToBroodPlot <- ggarrange(AlateBroodPlot, AlateBroodPlot2,
+AlateBroodDistPlot <- ggarrange(AlateBroodPlot, AlateBroodPlot2,
                            labels = c("(e)", "(f)"),
                            label.x = 0.9,
                            label.y = 0.965, 
@@ -1481,14 +1667,23 @@ AlateToBroodPlot <- ggarrange(AlateBroodPlot, AlateBroodPlot2,
                            ncol = 2, nrow = 1,
                            common.legend = FALSE)
 
-# Annotating the compiled plots to include a title
-annotate_figure(AlateToBroodPlot,
-                top = text_grob("Alates", color = "black",
-                                size = 18, x = 0.06, y = -1.30),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
+# Annotating the compiled plots to include a common y axis and title
+AlateBroodFullDist <- annotate_figure(AlateBroodDistPlot,
+                                      top = text_grob("Alates", color = "black",
+                                                      size = 18, x = 0.06, y = -0.75),
+                                      bottom = NULL,
+                                      left = NULL,
+                                      right = NULL
 )
+
+# Compiling the brood and queen densities in nest sections plots
+BroodQueenAlateBroodDist <- ggarrange(WorkerBroodFullDist, QueenBroodFullDist,
+                                 AlateBroodFullDist, 
+                                 ncol = 1, nrow = 3,
+                                 common.legend = TRUE)
+
+# Save plot as a PDF
+ggsave(file = "Fig7.pdf", plot = BroodQueenAlateBroodDist, width = 10.4, height = 19.6, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Alate scaled distances from the nest entrance
 # RESPONSE VARIABLE
@@ -1707,9 +1902,12 @@ OccurZonePlotFull <- annotate_figure(OccurZonePlot,
 )
 
 # Compile the spatial fidelity and occurrence zone plots
-ggarrange(FidZonePlotFull, OccurZonePlotFull,
+FidOccurFullPlot <- ggarrange(FidZonePlotFull, OccurZonePlotFull,
                             ncol = 1, nrow = 2,
                             common.legend = TRUE)
+
+# Save plot as a PDF
+ggsave(file = "Fig8.pdf", plot = FidOccurFullPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -1903,13 +2101,16 @@ FidOccurDistPlot <- ggarrange(SFZFullDistPlot, OccurFullDistPlot,
                             common.legend = TRUE)
 
 # Annotate the compiled plots to include a common x-axis
-annotate_figure(FidOccurDistPlot,
+FidOccurDistFullPlot <- annotate_figure(FidOccurDistPlot,
                 top = NULL,
                 bottom = text_grob("Average scaled distance to nest entrance", color = "black",
                                    size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig9.pdf", plot = FidOccurDistFullPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2098,13 +2299,16 @@ FidOccurBroodDistPlot <- ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
                             common.legend = TRUE)
 
 # Annotating the compiled plots to include a common x-axis
-annotate_figure(FidOccurBroodDistPlot,
+FidOccurBroodDistFullPlot <- annotate_figure(FidOccurBroodDistPlot,
                 top = NULL,
                 bottom = text_grob("Average scaled distance to brood center", color = "black",
                                    size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig10.pdf", plot = FidOccurBroodDistFullPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2137,197 +2341,68 @@ summary(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), 
 r.squaredGLMM(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
 
 ####################################################################################################################
-# COLONY MEMBER SCATTERPLOTS
-# The below script produces the colony member density plots
-# Each scatter plot colors the points by K-nearest neighbors, which is defined by how many points are in proximity to one another
-# First the scatter plots for the Netlogo simulation results are created, then each colony's worker, brood, queen, and alate (low nest density only) are created
-# Each combined plot is assigned to an object that can be run to view 
+# SUPPLEMENTARY PLOTS
+# SUPPLEMENTAL SFZ & OCCUR VS FREQUENCY PLOTS
 ####################################################################################################################
-
-# SIMULATION SCATTERPLOTS
-# High density treatment
-# Note that the data table has the ScaledDist column which is used here to remove points at the very back of the nest for the Netlogo simulation scatter plot 
-# Without these points being removed the back of the nest overlaps into the first nest section visually
-# This correction is not used in any of the other plots and represents a very small portion of the data points
-SmallRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Small" & ScaledDist < 0.995),
-                               aes(ScaledX, ScaledY)) +
-  geom_pointdensity() +
-  scale_color_viridis() +
-  coord_fixed() +
-  theme_pubclean() +
+# Spatial fidelity zone size and number of observations for an individual
+# NOTE The figures are produced by changing the number of observations required to > 2 in the FidelityZones function in the SFZFunctions.R script
+SFZFreq <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = SFZ, x = Freq)) +
+  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
   xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Random walk") +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 20, color = "black"),
-        legend.position = "bottom",
-        strip.background = element_blank(),
-        strip.text = element_blank(),
-        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
-  facet_wrap(~ Nest) +
-  labs(color = "KNN") +
-  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
-                                  barwidth = unit(7.5, "cm"),
-                                  even.steps = FALSE,
-                                  frame.colour = "black")) +
-  xlim(0, 7.5) +
-  ylim(-0.25, 5) 
-
-# Low density treatment
-# Note that the data table has the ScaledDist column which is used here to remove points at the very back of the nest for the Netlogo simulation scatter plot 
-# Without these points being removed the back of the nest overlaps into the first nest section visually
-# This correction is not used in any of the other plots and represents a very small portion of the data points
-LargeRandWalkDensity <- ggplot(data = SimDistScaled %>% filter(NestSize == "Large" & ScaledDist < 0.995),
-                               aes(ScaledX, ScaledY)) +
-  geom_pointdensity() +
-  scale_color_viridis() +
-  coord_fixed() +
+  ylab("Fidelity zone size") +
   theme_pubclean() +
-  xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Random walk") +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
+  theme(axis.text.x = element_text(size = 18, colour = "black"),
+        axis.title = element_text(size = 18 ,colour = "black"),
+        axis.text.y = element_text(size = 18, colour = "black"),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 20, color = "black"),
-        legend.position = "bottom",
-        strip.background = element_blank(),
-        strip.text = element_blank(),
-        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
-  facet_wrap(~ Nest) +
-  labs(color = "KNN") +
-  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
-                                  barwidth = unit(7.5, "cm"),
-                                  even.steps = FALSE,
-                                  frame.colour = "black")) +
-  xlim(0, 7.5) +
-  ylim(-0.25, 5)
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 18, colour = "black"),
+        legend.title = element_text(size = 18, colour = "black")) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red")) 
 
-# EMPIRICAL SCATTERPLOTS
-# Below are the colony member scatter plots for every colony
-
-# MAIN MANUSCRIPT FIGURE
-# This figure is the same a colony 11 in the supplementaty figures below
-# WORKERS
-WorkerDensityColony <- ggplot(data = WorkerDistScaledRD1_RD2 %>% filter(Colony == 11),
-                              aes(ScaledX, ScaledY)) +
-  geom_pointdensity(alpha = 0.75) +
-  scale_color_viridis() +
-  coord_fixed() +
+# Occurrence zone size and number of observations for an individual
+OccurFreq <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = Occur, x = Freq)) +
+  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
+  xlab(NULL) +
+  ylab("Occurrence zone size") +
   theme_pubclean() +
-  xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Workers") +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
+  theme(axis.text.x = element_text(size = 18, colour = "black"),
+        axis.title = element_text(size = 18 ,colour = "black"),
+        axis.text.y = element_text(size = 18, colour = "black"),
         axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 20, color = "black"),
-        legend.position = "bottom",
-        strip.background = element_blank(),
-        strip.text = element_blank(),
-        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
-  labs(color = "KNN") +
-  facet_wrap(~ Nest) +
-  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
-                                  barwidth = unit(7.5, "cm"),
-                                  even.steps = FALSE,
-                                  frame.colour = "black")) +
-  xlim(0, 7.5) +
-  ylim(-0.25, 5) 
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 18, colour = "black"),
+        legend.title = element_text(size = 18, colour = "black")) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red")) +
+  ylim(0, 10)
 
-# BROOD & QUEENS
-BroodQueenDensityColony <- ggplot(data = BroodDistScaledRD1_RD2 %>% filter(Colony == 11),
-                                  aes(ScaledX, ScaledY)) +
-  geom_pointdensity(alpha = 0.75) +
-  scale_color_viridis() +
-  coord_fixed() +
-  theme_pubclean() +
-  xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Brood") +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 20, color = "black"),
-        legend.position = "bottom",
-        strip.background = element_blank(),
-        strip.text = element_blank(),
-        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
-  labs(color = "KNN")+
-  facet_wrap(~ Nest) +
-  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
-                                  barwidth = unit(7.5, "cm"),
-                                  even.steps = FALSE,
-                                  frame.colour = "black")) +
-  xlim(0, 7.5) +
-  ylim(-0.25, 5) 
+# Compiling worker site fidelity and observations plots
+Fid.OccurZoneFreqPlot <- ggarrange(SFZFreq, OccurFreq,
+                                   labels = c("(a)", "(b)"),
+                                   label.x = 0.9,
+                                   font.label = list(size = 18, face = "plain"),
+                                   ncol = 2, nrow = 1,
+                                   common.legend = TRUE)
 
-# ALATE SCATTERPLOTS ONLY IN THE FOLLOWING COLONIES
-#   |  Colony |
-#   |  11     |
-#   |  12     |
-#   |  13     |
-#   |  14     |
-#   |  15     |
-#   |  18     |
-#   |  19     |
 
-AlateDensity <- ggplot(data = AlateDistScaledRD2 %>% filter(Colony == 11),
-                       aes(ScaledX, ScaledY)) +
-  geom_pointdensity(alpha = 0.75) +
-  geom_point(data = QueenDistScaledRD1_RD2 %>% filter(Colony == 11),
-             aes(ScaledX, ScaledY), alpha = 0.75, color = "red2", size = 2, shape = 17) +
-  scale_color_viridis() +
-  coord_fixed() +
-  theme_pubclean() +
-  xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Alates & Queens") +
-  theme(axis.text = element_blank(),
-        axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 20, color = "black"),
-        legend.position = "bottom",
-        strip.background = element_blank(),
-        strip.text = element_blank(),
-        plot.title = element_text(size = 18, color = "black", vjust = -6.75, hjust = 0.01)) +
-  facet_wrap(~ Nest) +
-  labs(color = "KNN")+
-  guides(color = guide_colorsteps(barheight = unit(0.5, "cm"),
-                                  barwidth = unit(7.5, "cm"),
-                                  even.steps = FALSE,
-                                  frame.colour = "black")) +
-  xlim(0, 7.5)+
-  ylim(-0.25, 5) 
 
-# Compiling the colony 11 worker, brood & queen scatter plots with the low density simulation scatter plot
-FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
-                             AlateDensity, 
-                             LargeRandWalkDensity,
-                             font.label = list(size = 18, face = "plain"),
-                             ncol = 2, nrow = 2,
-                             widths = 0.05,
-                             vjust = 1.85,
-                             label.x = 0.85)
-
-# Assigning the compiled plot to an object, which will be used below 
-DensityPlotColony <- FullDensityPlot
-
-# Annotating the compiled plot and include a title
-annotate_figure(FullDensityPlot,
-                top = text_grob("Colony Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
+# Annotate the compiled plots to include a common x-axis
+FidOccurFreqFull <- annotate_figure(Fid.OccurZoneFreqPlot,
+                top = NULL,
+                bottom = text_grob("Number of observations", color = "black",
+                                   size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig_A7.pdf", plot = FidOccurFreqFull, width = 10.4, height = 5.2, units = "in")
 
 ####################################################################################################################
 # SUPPLEMENTARY PLOTS
@@ -2525,10 +2600,13 @@ OccurZoneAreaPlotFull <- annotate_figure(OccurZoneAreaPlot,
 )
 
 # Compile the spatial fidelity and occurrence zone plots
-ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
+FidOccurZoneAreaPlot <- ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
                           ncol = 1, nrow = 2,
                           common.legend = TRUE)
 
+
+# Save plot as a PDF
+ggsave(file = "Fig_A8.pdf", plot = FidOccurZoneAreaPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (cm^2) and nest shape
 # RESPONSE VARIABLE
@@ -2557,68 +2635,6 @@ summary(lmer(Occur_Area ~ Nest * Density + (1|Colony) + (1|ColorID), data = Work
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
 r.squaredGLMM(lmer(Occur_Area ~ Nest * Density + (1|Colony) + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-####################################################################################################################
-# SUPPLEMENTARY PLOTS
-# SUPPLEMENTAL SFZ & OCCUR VS FREQUENCY PLOTS
-####################################################################################################################
-# Spatial fidelity zone size and number of observations for an individual
-# NOTE The figures are produced by changing the number of observations required to > 2 in the FidelityZones function in the SFZFunctions.R script
-SFZFreq <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking, aes(y = SFZ, x = Freq)) +
-  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
-  xlab(NULL) +
-  ylab("Fidelity zone size") +
-  theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
-        axis.ticks = element_blank(),
-        legend.key = element_blank(),
-        legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
-  scale_color_manual(breaks = c("Circle", "Tube"), 
-                     name = "Nest",
-                     values = c("blue", "red")) 
-
-# Occurrence zone size and number of observations for an individual
-OccurFreq <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking, aes(y = Occur, x = Freq)) +
-  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
-  xlab(NULL) +
-  ylab("Occurrence zone size") +
-  theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
-        axis.ticks = element_blank(),
-        legend.key = element_blank(),
-        legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
-  scale_color_manual(breaks = c("Circle", "Tube"), 
-                     name = "Nest",
-                     values = c("blue", "red")) +
-  ylim(0, 10)
-
-# Compiling worker site fidelity and observations plots
-Fid.OccurZoneFreqPlot <- ggarrange(SFZFreq, OccurFreq,
-                               labels = c("(a)", "(b)"),
-                               label.x = 0.9,
-                               font.label = list(size = 18, face = "plain"),
-                               ncol = 2, nrow = 1,
-                               common.legend = TRUE)
-
-
-
-# Annotate the compiled plots to include a common x-axis
-annotate_figure(Fid.OccurZoneFreqPlot,
-                top = NULL,
-                bottom = text_grob("Number of observations", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
-)
-
 
 ####################################################################################################################
 # SUPPLEMENTARY PLOTS
@@ -2675,13 +2691,16 @@ Fid.OccurZoneColPlot <- ggarrange(SFZCol, OccurCol,
 
 
 # Annotate the compiled plots to include a common x-axis
-annotate_figure(Fid.OccurZoneColPlot,
+FidOccurColSizePlot <- annotate_figure(Fid.OccurZoneColPlot,
                 top = NULL,
                 bottom = text_grob("Number of workers", color = "black",
                                    size = 18, x = 0.525),
                 left = NULL,
                 right = NULL
 )
+
+# Save plot as a PDF
+ggsave(file = "Fig_A9.pdf", plot = FidOccurColSizePlot, width = 10.4, height = 5.2, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker fidelity zone size (scaled) and the number of workers in a colony (colony size)
 # RESPONSE VARIABLE
@@ -2791,14 +2810,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony1 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony1,
-                top = text_grob("Colony 1 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A11.pdf", plot = DensityPlotColony1, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 2
 # WORKERS
@@ -2871,14 +2884,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony2 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony2,
-                top = text_grob("Colony 2 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A12.pdf", plot = DensityPlotColony2, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 3
 # WORKERS
@@ -2951,14 +2958,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which can be used below or later
 DensityPlotColony3 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony3,
-                top = text_grob("Colony 3 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A13.pdf", plot = DensityPlotColony3, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 4
 # WORKERS
@@ -3032,14 +3033,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony4 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony4,
-                top = text_grob("Colony 4 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A14.pdf", plot = DensityPlotColony4, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 5
 # WORKERS
@@ -3112,14 +3107,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony5 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony5,
-                top = text_grob("Colony 5 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A15.pdf", plot = DensityPlotColony5, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 6
 # WORKERS
@@ -3193,14 +3182,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony6 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony6,
-                top = text_grob("Colony 6 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A16.pdf", plot = DensityPlotColony6, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 7
 # WORKERS
@@ -3274,14 +3257,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony7 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony7,
-                top = text_grob("Colony 7 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A17.pdf", plot = DensityPlotColony7, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 8
 # WORKERS
@@ -3355,14 +3332,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony8 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony8,
-                top = text_grob("Colony 8 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A18.pdf", plot = DensityPlotColony8, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 9
 # WORKERS
@@ -3436,14 +3407,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony9 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony9,
-                top = text_grob("Colony 9 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A19.pdf", plot = DensityPlotColony9, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 10
 # WORKERS
@@ -3517,14 +3482,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony10 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony10,
-                top = text_grob("Colony 10 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A20.pdf", plot = DensityPlotColony10, width = 9.375, height = 6.77, units = "in")
 
 # LOW NEST DENSITY
 # COLONY 11
@@ -3636,14 +3595,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony11 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(FullDensityPlot,
-                top = text_grob("Colony 11 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A21.pdf", plot = DensityPlotColony11, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 12
 # WORKERS
@@ -3754,14 +3707,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony12 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(FullDensityPlot,
-                top = text_grob("Colony 12 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A22.pdf", plot = DensityPlotColony12, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 13
 # WORKERS
@@ -3872,14 +3819,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony13 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony13,
-                top = text_grob("Colony 13 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A23.pdf", plot = DensityPlotColony13, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 14
 # WORKERS
@@ -3990,14 +3931,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony14 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony14,
-                top = text_grob("Colony 14 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A24.pdf", plot = DensityPlotColony14, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 15
 # WORKERS
@@ -4108,14 +4043,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony15 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony15,
-                top = text_grob("Colony 15 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A25.pdf", plot = DensityPlotColony15, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 16
 # WORKERS
@@ -4189,14 +4118,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony16 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony16,
-                top = text_grob("Colony 16 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A26.pdf", plot = DensityPlotColony16, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 17
 # WORKERS
@@ -4270,14 +4193,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony17 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony17,
-                top = text_grob("Colony 17 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A27.pdf", plot = DensityPlotColony17, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 18
 # WORKERS
@@ -4388,14 +4305,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony18 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony18,
-                top = text_grob("Colony 18 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A28.pdf", plot = DensityPlotColony18, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 19
 # WORKERS
@@ -4506,14 +4417,8 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony19 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(FullDensityPlot,
-                top = text_grob("Colony 19 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A29.pdf", plot = DensityPlotColony19, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 20
 # WORKERS
@@ -4587,11 +4492,5 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 # Assigning the compiled plot to an object, which will be used below 
 DensityPlotColony20 <- FullDensityPlot
 
-# Annotating the compiled plot and include a title
-annotate_figure(DensityPlotColony20,
-                top = text_grob("Colony 20 Member Densities", color = "black",
-                                size = 18, x = 0.2),
-                bottom = NULL,
-                left = NULL,
-                right = NULL
-)
+# Save plot as a PDF
+ggsave(file = "Fig_A30.pdf", plot = DensityPlotColony20, width = 9.375, height = 6.77, units = "in")

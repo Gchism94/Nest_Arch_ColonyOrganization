@@ -18,8 +18,10 @@ install.packages("pacman") # Download package with function to load multiple pac
 # p_load() will download packages that aren't in system library
 ####################################################################################################################
 
-pacman::p_load(forcats,
+pacman::p_load(assertthat,
+               forcats,
                formattable,
+               ggdist,
                ggpointdensity,
                ggpubr,
                lme4,
