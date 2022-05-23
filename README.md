@@ -35,7 +35,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 ***
 
-#### BROOD / QUEENS: FullDataCoordBrood.csv, FullDataCoordBroodRD2.csv / FullDataCoordQueen.csv, FullDataCoordQueenRD2.csv
+#### BROOD / QUEENS: FullDataCoordBrood.csv, FullDataCoordBroodRD2.csv; FullDataCoordQueen.csv, FullDataCoordQueenRD2.csv
 ###### Raw experimental data with brood (OR) queen x and y position in nests
 * Colony: Unique experimental colony identifiers
 * Nest: The nest shape treatment (Tube / Circle)
