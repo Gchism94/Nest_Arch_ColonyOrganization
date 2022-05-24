@@ -69,7 +69,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 *** 
 
-### REFERENCE DATA
+### REFERENCE DATA (Bins_Working.R)
 #### NEST BINS: Empirical
 ##### BinsNullFull
 ###### Null data sheet with eight bins for tube and circle nests in every colony
@@ -115,3 +115,30 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 * Nest: The nest shape treatment (Tube / Circle)
 * Bin: Nest section identifier (1-8)
 * Corner: Presence of a corner (Y / N)
+
+***
+
+#### CORNERS: Empirical
+##### CornerFullSim
+* Nest: The nest shape treatment (Tube / Circle)
+* Bin: Nest section identifier (1-8)
+* Corner: Presence of a corner (Y / N)
+
+***
+
+### REFERENCE DATA: 
+#### DISTANCES IN THE NEST: Empirical
+##### DistBinsFull
+###### Reference coordinates for the entrance of nest sections (Bin) front-to-back and shortest distance to the entrance from each nest section entrance
+* Colony: Unique experimental colony identifiers
+* Nest: The nest shape treatment (Tube / Circle)
+* Distance: Reference shortest distance from a nest section to the entrance
+* Bin: Nest section identifier (1-8)
+* BinX: X-axis reference coodinate for a nest section entrance
+* BinY: Y-axis reference coodinate for a nest section entrance
+* Xmax: Max X-axis coordinate possible within the nest
+* Ymax: Max Y-axis coordinate possible within the nest
+* MaxDist: Max possible shortest distance from the nest entrance
+* TubeRatio: Ratio of shortest distance to the nest entrance in circle nest / tube nest 
+
+
