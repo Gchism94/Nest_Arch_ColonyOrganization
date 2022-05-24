@@ -172,7 +172,15 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 ##### NestAreaFull.csv
 ###### Reference for colony size (number of workers in the colony) and nest area
 * Colony: Unique experimental colony identifiers
-* Number.ants
+* Number.ants: Number of workers in the colony after painting
+* Diameter: The diameter of the circle nest 
+* Area: The area of the nest 
 
+***
 
+##### ScalingCircleSFZ.csv
+###### Reference to scale the radius of circle nests to make coordinates representing fidelity zone bins
+* Colony: Unique experimental colony identifiers
+* Scaling: The scaling factor that is applied to the radius of each circle nest
 
+***
