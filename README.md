@@ -71,7 +71,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 ### REFERENCE DATA (Bins_Working.R)
 #### NEST BINS: Empirical
-##### BinsNullFull
+##### BinsNullFull.csv
 ###### Null data sheet with eight bins for tube and circle nests in every colony
 * Colony: Unique experimental colony identifiers
 * Nest: The nest shape treatment (Tube / Circle)
@@ -79,7 +79,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 ***
 
-##### BinCoordFull
+##### BinCoordFull.csv
 ###### Reference binning coordinates to group empirical coordinates into nest sections
 * Colony: Unique experimental colony identifiers
 * Nest: The nest shape treatment (Tube / Circle)
@@ -90,7 +90,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 ***
 
 #### NEST BINS: Netlogo Simulations
-##### BinsNullNetlogo
+##### BinsNullNetlogo.csv
 ###### Null data sheet with eight bins for tube and circle nests in each simulation treatment
 * Nest: The nest shape treatment (Tube / Circle)
 * NestSize: The size treatment for simulations (Small / Large)
@@ -98,7 +98,7 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 ***
 
-##### BinCoordNetlogo 
+##### BinCoordNetlogo.csv 
 ###### Reference binning coordinates to group Netlogo simulation coordinates into nest sections
 * Nest: The nest shape treatment (Tube / Circle)
 * NestSize: The size treatment for simulations (Small / Large)
@@ -119,16 +119,16 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 ***
 
 #### CORNERS: Empirical
-##### CornerFullSim
+##### CornerFullSim.csv
 * Nest: The nest shape treatment (Tube / Circle)
 * Bin: Nest section identifier (1-8)
 * Corner: Presence of a corner (Y / N)
 
 ***
 
-### REFERENCE DATA: 
+### REFERENCE DATA (DistanceFunctions.R) 
 #### DISTANCES IN THE NEST: Empirical
-##### DistBinsFull
+##### DistBinsFull.csv
 ###### Reference coordinates for the entrance of nest sections (Bin) front-to-back and shortest distance to the entrance from each nest section entrance
 * Colony: Unique experimental colony identifiers
 * Nest: The nest shape treatment (Tube / Circle)
@@ -140,5 +140,39 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 * Ymax: Max Y-axis coordinate possible within the nest
 * MaxDist: Max possible shortest distance from the nest entrance
 * TubeRatio: Ratio of shortest distance to the nest entrance in circle nest / tube nest 
+
+***
+
+#### DISTANCES IN THE NEST: Netlogo Simulations
+##### DistBinsFullNetlogo.csv
+###### Reference coordinates for the entrance of nest sections (Bin) front-to-back and shortest distance to the entrance from each nest section entrance
+* NestSize: The size treatment for simulations (Small / Large)
+* Nest: The nest shape treatment (Tube / Circle)
+* Distance: Reference shortest distance from a nest section to the entrance
+* Bin: Nest section identifier (1-8)
+* BinX: X-axis reference coodinate for a nest section entrance
+* BinY: Y-axis reference coodinate for a nest section entrance
+* Xmax: Max X-axis coordinate possible within the nest
+* Ymax: Max Y-axis coordinate possible within the nest
+* MaxDist: Max possible shortest distance from the nest entrance
+* TubeRatio: Ratio of shortest distance to the nest entrance in circle nest / tube nest 
+
+*** 
+
+### REFERENCE DATA (SFZFunctions.R)
+#### WORKER SITE FIDELITY (SPATIAL FIDELITY & OCCURRENCE ZONE SIZES), ALSO RELATING SIZES TO DISTANCES IN THE NEST
+##### ColorRefFull.csv
+###### Reference of all possible unique color identifiers paint marked workers
+* Colony: Unique experimental colony identifiers
+* Head: Head color mark
+* Thorax: Thorax color mark
+* Abd1: Left side abdomen mark
+* Abd2: Right side abdomen mark
+
+##### NestAreaFull.csv
+###### Reference for colony size (number of workers in the colony) and nest area
+* Colony: Unique experimental colony identifiers
+* Number.ants
+
 
 
