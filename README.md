@@ -12,11 +12,11 @@ Data and R script used for the manuscript: Nest shape influences colony organiza
 
 ## Dependencies 
 ##### Scripts for this manuscript should be executed in the following order: 
-1. Stat_boxplot_custom.R
-2. Bins_Working.r
-3. DistanceFunctions.R
-4. SFZFunctions.R
-5. NestArchFuncts.Analyses.R
+1. Stat_boxplot_custom.R: Custom boxplot function, replacing geom_boxplot() in ggplot2. The function extends the whisker range to the data range
+2. Bins_Working.r: Functions to bin colony member and Netlogo simulation coordinates into nest sections
+3. DistanceFunctions.R: Functions to find each colony member and Netlogo simulation coordinates shortest distances in the nest
+4. SFZFunctions.R: Functions towards marker worker site fidelity (spatial fidelity & occurrence zones)
+5. NestArchFuncts.Analyses.R: All analyses and plots
 ##### Several packages are required, however all are loaded through the package "pacman", so be certain to install this package before running any other code.
 ##### See the following documentation for further information on the "pacman" package: https://www.rdocumentation.org/packages/pacman/versions/0.5.1 
 
