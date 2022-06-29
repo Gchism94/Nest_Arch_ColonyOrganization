@@ -38,19 +38,19 @@ ScalingCircleSFZ <- read.csv("ScalingCircleSFZ.csv")
 ColorCoords <- function(data.table){
   # Fixing missing marks to only by "X" 
   ColorSetting <- data.table %>%
-    # Separate the ColorID column into 4 columns, one for each mark 
-    separate(ColorID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE) %>% 
+    # Separate the AntID column into 4 columns, one for each mark 
+    separate(AntID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE) %>% 
     # Changing "?" values to "X" in each column
     mutate(Head = ifelse(Head == "?", "X", Head),
            Thorax = ifelse(Thorax == "?", "X", Thorax),
            Abd1 = ifelse(Abd1 == "?", "X", Abd1),
            Abd2 = ifelse(Abd2 == "?", "X", Abd2)) %>%
-    # Uniting the 4 columns to the original ColorID column
-    unite(ColorID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = TRUE)
+    # Uniting the 4 columns to the original AntID column
+    unite(AntID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = TRUE)
   # Creating a reference data set of all possible combinations for one missing color mark
   ColorRefFull <- ColorRefFull%>%
     # Unite the color reference columns
-    unite(ColorIDRef, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE)
+    unite(AntIDRef, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE)
   # Creating individual data sets to create one column full of "X"
   X1 <- ColorRefFull
   X2 <- ColorRefFull
@@ -67,27 +67,27 @@ ColorCoords <- function(data.table){
     full_join(X4) %>%
     # Uniting the reference columns
     # This new column is the same name as in the real data set
-    # So any column with the same missing value will now have the true color combination in the ColorIDRef column
-    unite(ColorID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = TRUE)
+    # So any column with the same missing value will now have the true color combination in the AntIDRef column
+    unite(AntID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = TRUE)
   # Creating the final data set with the original combination and true color combination
   SFZDataFull <<- left_join(ColorSetting, FullColorCoordRef) %>%
-    # Separating the true ColorID column and removing rows with more than one "X"
+    # Separating the true AntID column and removing rows with more than one "X"
     # This is done by creating a column that assigns a 1 when two columns are "X"
-    separate(ColorID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE) %>%
+    separate(AntID, c("Head", "Thorax", "Abd1", "Abd2"), sep = ",", remove = FALSE) %>%
     mutate(XCount = ifelse(Head == "X" & Thorax == "X" | 
                              Abd1 == "X" & Abd2 == "X" | 
                              Head == "X" & Abd1 == "X" |
                              Head == "X" & Abd2 == "X" | 
                              Thorax == "X" & Abd1 == "X"|
                              Thorax == "X" & Abd2 == "X", 1, 0),
-           # Changing NA values in ColorIDRef to 0, which occurs when a ColorID doesn't have just one missing color
+           # Changing NA values in AntIDRef to 0, which occurs when a AntID doesn't have just one missing color
            # The objective is to remove both rows with more than two missing colors and keep all fully marked workers 
-           ColorIDRef = ifelse(is.na(ColorIDRef), 0, ColorIDRef),
-           ColorID = ifelse(ColorIDRef == "0", ColorID, ColorIDRef)) %>%
+           AntIDRef = ifelse(is.na(AntIDRef), 0, AntIDRef),
+           AntID = ifelse(AntIDRef == "0", AntID, AntIDRef)) %>%
     # Filtering out rows with more than one "X", or missing color
     filter(XCount != 1) %>%
     # Selecting the desired columns 
-    select(Colony, Nest, Day, ScaledX, ScaledY, Bin, ColorID) %>%
+    select(Colony, Nest, Day, ScaledX, ScaledY, Bin, AntID) %>%
     distinct()
 }
 
@@ -361,7 +361,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony1BinnedSFZ <<- full_join(Colony1BinnedTubeSFZ, Colony1BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -616,7 +616,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony2BinnedSFZ <<- full_join(Colony2BinnedTubeSFZ, Colony2BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -871,7 +871,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony3BinnedSFZ <<- full_join(Colony3BinnedTubeSFZ, Colony3BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -1126,7 +1126,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony4BinnedSFZ <<- full_join(Colony4BinnedTubeSFZ, Colony4BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -1381,7 +1381,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony5BinnedSFZ <<- full_join(Colony5BinnedTubeSFZ, Colony5BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -1636,7 +1636,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony6BinnedSFZ <<- full_join(Colony6BinnedTubeSFZ, Colony6BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -1891,7 +1891,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony7BinnedSFZ <<- full_join(Colony7BinnedTubeSFZ, Colony7BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -2146,7 +2146,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony8BinnedSFZ <<- full_join(Colony8BinnedTubeSFZ, Colony8BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -2401,7 +2401,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony9BinnedSFZ <<- full_join(Colony9BinnedTubeSFZ, Colony9BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -2656,7 +2656,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony10BinnedSFZ <<- full_join(Colony10BinnedTubeSFZ, Colony10BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -2911,7 +2911,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony11BinnedSFZ <<- full_join(Colony11BinnedTubeSFZ, Colony11BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -3166,7 +3166,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony12BinnedSFZ <<- full_join(Colony12BinnedTubeSFZ, Colony12BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -3421,7 +3421,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony13BinnedSFZ <<- full_join(Colony13RD2BinnedTubeSFZ, Colony13RD2BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -3676,7 +3676,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony14BinnedSFZ <<- full_join(Colony14BinnedTubeSFZ, Colony14BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -3931,7 +3931,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony15BinnedSFZ <<- full_join(Colony15BinnedTubeSFZ, Colony15BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -4186,7 +4186,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony16BinnedSFZ <<- full_join(Colony16BinnedTubeSFZ, Colony16BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -4441,7 +4441,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony17BinnedSFZ <<- full_join(Colony17BinnedTubeSFZ, Colony17BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -4696,7 +4696,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony18BinnedSFZ <<- full_join(Colony18BinnedTubeSFZ, Colony18BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -4951,7 +4951,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony19BinnedSFZ <<- full_join(Colony19BinnedTubeSFZ, Colony19BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -5206,7 +5206,7 @@ CoordBinnedSFZ <- function(data_table){
   
   # Join the site fidelity zone data sets
   Colony20BinnedSFZ <<- full_join(Colony20BinnedTubeSFZ, Colony20BinnedCircleSFZ) %>%
-    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, ColorID)
+    select(Colony, Nest, Day, Bin, ScaledX, ScaledY, Zone, AntID)
 }
 
 # Run the zone assignment function on the usable color coordinates worker data set
@@ -5249,22 +5249,22 @@ FidelityZones <- function(data_table){
   # Joining the area reference data set
   FidelityZonesDataRaw <- left_join(data_table, NestAreaFull) %>%
     # Creating a column filled with 1s
-    mutate(ColorIDNum = 1) %>%
-    # Group by the Colony, Nest, Day, and ColorID columns
-    group_by(Colony, Nest, Day, ColorID) %>%
+    mutate(AntIDNum = 1) %>%
+    # Group by the Colony, Nest, Day, and AntID columns
+    group_by(Colony, Nest, Day, AntID) %>%
     # Count the number of each group
     mutate(count = n()) %>%
     # There should only be one observation of each color ID
     # If this isn't true we don't want the color ID in case of error
     filter(count == 1) %>%
-    # Group by the Colony, Nest, and ColorID columns
-    group_by(Colony, Nest, ColorID) %>%
+    # Group by the Colony, Nest, and AntID columns
+    group_by(Colony, Nest, AntID) %>%
     # Finding the frequency of the color ID in each group
-    mutate(Freq = sum(ColorIDNum)) %>%
+    mutate(Freq = sum(AntIDNum)) %>%
     # Removing all color IDs with fewer than three observations
     filter(Freq > 6) %>%
-    # Group by the Colony, Nest, ColorID, and Zone columns
-    group_by(Colony, Nest, ColorID, Zone) %>%
+    # Group by the Colony, Nest, AntID, and Zone columns
+    group_by(Colony, Nest, AntID, Zone) %>%
     # Count the number of observations in each group
     mutate(ZoneCount = n(),
            # Calculating the proportion of color ID observations in each observed zone 
@@ -5272,8 +5272,8 @@ FidelityZones <- function(data_table){
     select(-c(Day, ScaledX, ScaledY)) %>%
     # Remove any duplicates - i.e., days 2 and 10 can have two observations in zone 5, so there will be duplicate values of PropSFZ
     distinct() %>%
-    # Group by the Colony, Nest, and ColorID columns
-    group_by(Colony, Nest, ColorID) %>%
+    # Group by the Colony, Nest, and AntID columns
+    group_by(Colony, Nest, AntID) %>%
     # Determining whether the zone has at least 15% of total observations or not
     # If so, the zone will be included in fidelity zone
     mutate(FullZone = 1, 
@@ -5285,7 +5285,7 @@ FidelityZones <- function(data_table){
            SFZ_Area = Area * (SFZ / 24), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, ColorID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
+    select(Colony, Nest, AntID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
     distinct()
   
   # Final data set
@@ -5433,20 +5433,20 @@ DistanceCoordsFunctionSFZ<-function(data.table){
   
   # Has all distances and zones
   WorkerDistScaledRD1_RD2SFZFull <<- full_join(DistBinsTube, DistBinsCircle) %>%
-    # Group by the columns Colony, Nest and ColorID
-    group_by(Colony, Nest, Day, ColorID) %>%
+    # Group by the columns Colony, Nest and AntID
+    group_by(Colony, Nest, Day, AntID) %>%
     # Finding the mean distance of workers within the groupings
     mutate(ScaledDist = DistanceTotal / (MaxDist),
            ScaledDist = ifelse(ScaledDist > 1, 1, ScaledDist))%>%
     ungroup()%>%
-    select(Colony, Nest, ColorID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area, Freq, Number.ants) %>%
+    select(Colony, Nest, AntID, SFZ, Occur, ScaledDist, Density, Day, SFZ_Area, Occur_Area, Freq, Number.ants) %>%
     distinct()
 
   # Contains all mean distances
   WorkerDistScaledRD1_RD2SFZWorking <<- WorkerDistScaledRD1_RD2SFZFull %>%
-    group_by(Colony, Nest, ColorID) %>%
+    group_by(Colony, Nest, AntID) %>%
     mutate(MeanScaledDist = mean(ScaledDist)) %>%
-    select(Colony, Nest, ColorID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area, Freq, Number.ants)%>%
+    select(Colony, Nest, AntID, SFZ, Occur, MeanScaledDist, Density, SFZ_Area, Occur_Area, Freq, Number.ants)%>%
     distinct()
 }
 
@@ -6025,7 +6025,7 @@ DistanceToBroodSFZFunction <- function(data.table){
     group_by(Colony) %>% # Group by the colony column
     mutate(ToBrood = BroodDist / MaxDist, # Scale the shortest distance from each individual to the brood center
            ToBrood = ifelse(ToBrood > 1, 1, ToBrood)) %>% # As a precaution, if any scaled distances are greater than 1, the value is converted to 1
-    select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, ColorID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select desired columns
+    select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, AntID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select desired columns
     distinct() %>% # Remove any duplicates (shouldn't exist)
     drop_na() # Remove NAs
 
@@ -6036,15 +6036,19 @@ DistanceToBroodSFZCircle <- data.table %>% # Full worker data set
   group_by(Colony, Day) %>% # Group by the Colony and Day columns
   mutate(BroodDist = sqrt(((ScaledX - BroodX)^2) + ((ScaledY - BroodY)^2)), # Shortest distance from each individual to the brood center
          ToBrood = BroodDist / MaxDist) %>% # Select the desired columns 
-  select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, ColorID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select the desired columns
+  select(Colony, Nest, Day, ScaledX, ScaledY, Density, ToBrood, AntID, SFZ, Occur, SFZ_Area, Occur_Area) %>% # Select the desired columns
   distinct() %>% # Remove any duplicates (shouldn't exist)
   drop_na() # Remove NAs
 
+BroodCentDistWorkersSFZFull <<- full_join(DistanceToBroodSFZTube, DistanceToBroodSFZCircle) %>%
+  unite('AntIDColNest', c(Colony, AntID, Nest), remove = FALSE) %>%
+  mutate(AntIDColNest = as.factor(AntIDColNest))
+
 BroodCentDistWorkersSFZ <<- full_join(DistanceToBroodSFZTube, DistanceToBroodSFZCircle) %>%
-  group_by(Colony, Nest, ColorID) %>%
+  group_by(Colony, Nest, AntID) %>%
   mutate(MeanToBrood = mean(ToBrood)) %>%
   select(-c(Day, ScaledX, ScaledY, ToBrood)) %>%
-  distinct()
+  distinct() 
 }
 
 # Run the mean distance to the brood center for the color marked workers data set FidelityZonesDataRD1_RD2
@@ -6065,22 +6069,22 @@ FidelityZonesSupp <- function(data_table){
   # Joining the area reference data set
   FidelityZonesDataRaw <- left_join(data_table, NestAreaFull) %>%
     # Creating a column filled with 1s
-    mutate(ColorIDNum = 1) %>%
-    # Group by the Colony, Nest, Day, and ColorID columns
-    group_by(Colony, Nest, Day, ColorID) %>%
+    mutate(AntIDNum = 1) %>%
+    # Group by the Colony, Nest, Day, and AntID columns
+    group_by(Colony, Nest, Day, AntID) %>%
     # Count the number of each group
     mutate(count = n()) %>%
     # There should only be one observation of each color ID
     # If this isn't true we don't want the color ID in case of error
     filter(count == 1) %>%
-    # Group by the Colony, Nest, and ColorID columns
-    group_by(Colony, Nest, ColorID) %>%
+    # Group by the Colony, Nest, and AntID columns
+    group_by(Colony, Nest, AntID) %>%
     # Finding the frequency of the color ID in each group
-    mutate(Freq = sum(ColorIDNum)) %>%
+    mutate(Freq = sum(AntIDNum)) %>%
     # Removing all color IDs with fewer than three observations
     filter(Freq > 2) %>%
-    # Group by the Colony, Nest, ColorID, and Zone columns
-    group_by(Colony, Nest, ColorID, Zone) %>%
+    # Group by the Colony, Nest, AntID, and Zone columns
+    group_by(Colony, Nest, AntID, Zone) %>%
     # Count the number of observations in each group
     mutate(ZoneCount = n(),
            # Calculating the proportion of color ID observations in each observed zone 
@@ -6088,8 +6092,8 @@ FidelityZonesSupp <- function(data_table){
     select(-c(Day, ScaledX, ScaledY)) %>%
     # Remove any duplicates - i.e., days 2 and 10 can have two observations in zone 5, so there will be duplicate values of PropSFZ
     distinct() %>%
-    # Group by the Colony, Nest, and ColorID columns
-    group_by(Colony, Nest, ColorID) %>%
+    # Group by the Colony, Nest, and AntID columns
+    group_by(Colony, Nest, AntID) %>%
     # Determining whether the zone has at least 15% of total observations or not
     # If so, the zone will be included in fidelity zone
     mutate(FullZone = 1, 
@@ -6101,12 +6105,12 @@ FidelityZonesSupp <- function(data_table){
            SFZ_Area = Area * (SFZ / 24), # Unscaled spatial fidelity zones
            Density = ifelse(Colony < 11, "High", "Low")) %>%
     # Select the desired columns
-    select(Colony, Nest, ColorID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
+    select(Colony, Nest, AntID, Density, SFZ, Occur, Occur_Area, SFZ_Area, Freq, Number.ants, FullZone, FidZone) %>%
     distinct()
   
   # Final data set
   FidelityZonesDataRD1_RD2Supp <<- left_join(data_table, FidelityZonesDataRaw) %>%
-    select(Colony, Nest, ColorID, Density, SFZ, Occur, Freq) %>%
+    select(Colony, Nest, AntID, Density, SFZ, Occur, Freq) %>%
     distinct() %>%
     drop_na()
 }

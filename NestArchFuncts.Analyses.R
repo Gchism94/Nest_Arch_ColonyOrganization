@@ -727,7 +727,7 @@ MaxWorkerProp <- annotate_figure(MaxLogPlot,
 )
 
 # Save plot as a PDF
-ggsave(file = "Fig_A10.pdf", plot = MaxWorkerProp, width = 10.4, height = 7.3, units = "in")
+ggsave(file = "Fig_A11.pdf", plot = MaxWorkerProp, width = 10.4, height = 7.3, units = "in")
 
 # GENERALIZED LINEAR REGRESSION (BINOMIAL FIT): Max worker and Netlogo simulation proportions in nest sections
 # RESPONSE VARIABLE
@@ -1135,7 +1135,7 @@ WorkerSimDistPlot <- annotate_figure(FullDistPlot,
 )
 
 # Save plot as a PDF
-ggsave(file = "Fig5.pdf", plot = WorkerSimDistPlot, width = 10.4, height = 10.4, units = "in")
+ggsave(file = "Fig_A8.pdf", plot = WorkerSimDistPlot, width = 10.4, height = 10.4, units = "in")
 
 # Combining the empirical and Netlogo simulated worker distances from the nest entrance data sets
 AllDistScaledRD1_RD2 <- SimDistScaled %>%
@@ -1152,10 +1152,10 @@ AllDistScaledRD1_RD2 <- SimDistScaled %>%
 # Corner - Presence of a corner in the nest section (Y / N)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = WorkerDistScaledRD1_RD2))
+summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1|Colony), data = WorkerDistScaledRD1_RD2))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = WorkerDistScaledRD1_RD2))
+r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1|Colony), data = WorkerDistScaledRD1_RD2))
 
 # LINEAR REGRESSION: Empirical and Netlogo simulated worker scaled distances from the nest entrance
 # RESPONSE VARIABLE 
@@ -1251,10 +1251,10 @@ BroodFullDist <- annotate_figure(BroodDistPlot,
 # Corner - Presence of a corner in the nest section (Y / N)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodDistScaledRD1_RD2))
+summary(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1|Colony), data = BroodDistScaledRD1_RD2))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodDistScaledRD1_RD2))
+r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1|Colony), data = BroodDistScaledRD1_RD2))
 
 # QUEEN SCALED DISTANCES FROM THE NEST ENTRANCE
 # HISTOGRAMS
@@ -1331,10 +1331,10 @@ QueenFullDist <- annotate_figure(QueenDistPlot,
 # Day - Experimental observation (From days 1-16, always days 3-14 in High density treatment)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ScaledDist ~ Nest * Density + Corner + Day + (1 | Colony), data = QueenDistScaledRD1_RD2))
+summary(lmer(ScaledDist ~ Nest * Density + Corner + Day + (1|Colony), data = QueenDistScaledRD1_RD2))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1 | Colony), data = QueenDistScaledRD1_RD2))
+r.squaredGLMM(lmer(ScaledDist ~ Nest * Density + Day + Corner + (1|Colony), data = QueenDistScaledRD1_RD2))
 
 # ALATE SCALED DISTANCES TO THE NEST ENTRANCE
 # Removing individuals with unknown alate sex
@@ -1413,7 +1413,7 @@ BroodQueenAlateDist <- ggarrange(BroodFullDist, QueenFullDist,
                                  common.legend = TRUE)
 
 # Save plot as a PDF
-ggsave(file = "Fig6.pdf", plot = BroodQueenAlateDist, width = 10.4, height = 19.6, units = "in")
+ggsave(file = "Fig_A9.pdf", plot = BroodQueenAlateDist, width = 10.4, height = 19.6, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Alate scaled distances from the nest entrance
 # RESPONSE VARIABLE
@@ -1426,10 +1426,10 @@ ggsave(file = "Fig6.pdf", plot = BroodQueenAlateDist, width = 10.4, height = 19.
 # Ratio - Ratio of male alates over total alates in the observation (0 - 1)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ScaledDist ~ Nest + Sex + Ratio + Day + Corner + (1 | Colony), data = AlateDistScaledRD2Plot))
+summary(lmer(ScaledDist ~ Nest + Sex + Ratio + Day + Corner + (1|Colony), data = AlateDistScaledRD2Plot))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ScaledDist ~ Nest + Sex + Ratio + Day + Corner + (1 | Colony), data = AlateDistScaledRD2Plot))
+r.squaredGLMM(lmer(ScaledDist ~ Nest + Sex + Ratio + Day + Corner + (1|Colony), data = AlateDistScaledRD2Plot))
 
 ####################################################################################################################
 # PLOTS AND ANALYSES: Mobile colony member distances from the brood center
@@ -1522,10 +1522,10 @@ WorkerBroodFullDist <- annotate_figure(WorkerBroodDistPlot,
 # Corner - Presence of a corner in the nest section (Y / N)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistWorkersRD1_RD2))
+summary(lmer(ToBrood ~ Nest * Density + Day + Corner + (1|Colony), data = BroodCentDistWorkersRD1_RD2))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistWorkersRD1_RD2))
+r.squaredGLMM(lmer(ToBrood ~ Nest * Density + Day + Corner + (1|Colony), data = BroodCentDistWorkersRD1_RD2))
 
 # QUEEN SCALED DISTANCE TO THE BROOD CENTER
 # HISTOGRAMS
@@ -1601,10 +1601,10 @@ QueenBroodFullDist <- annotate_figure(QueenBroodDistPlot,
 # Corner - Presence of a corner in the nest section (Y / N)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistQueensRD1_RD2))
+summary(lmer(ToBrood ~ Nest * Density + Day + Corner + (1|Colony), data = BroodCentDistQueensRD1_RD2))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ToBrood ~ Nest * Density + Day + Corner + (1 | Colony), data = BroodCentDistQueensRD1_RD2))
+r.squaredGLMM(lmer(ToBrood ~ Nest * Density + Day + Corner + (1|Colony), data = BroodCentDistQueensRD1_RD2))
 
 # ALATE SCALED DISTANCE TO THE BROOD CENTER
 # Removing individuals with unknown alate sex
@@ -1683,7 +1683,7 @@ BroodQueenAlateBroodDist <- ggarrange(WorkerBroodFullDist, QueenBroodFullDist,
                                  common.legend = TRUE)
 
 # Save plot as a PDF
-ggsave(file = "Fig7.pdf", plot = BroodQueenAlateBroodDist, width = 10.4, height = 19.6, units = "in")
+ggsave(file = "Fig5.pdf", plot = BroodQueenAlateBroodDist, width = 10.4, height = 19.6, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Alate scaled distances from the nest entrance
 # RESPONSE VARIABLE
@@ -1696,15 +1696,15 @@ ggsave(file = "Fig7.pdf", plot = BroodQueenAlateBroodDist, width = 10.4, height 
 # Ratio - Ratio of male alates over total alates in the observation (0 - 1)
 # RANDOM EFFECT
 # (1|Colony) - Colony identification 
-summary(lmer(ToBrood ~ Nest + Sex + Day + Corner + Ratio + (1 | Colony), data = BroodCentDistAlatesRD2Plot))
+summary(lmer(ToBrood ~ Nest + Sex + Day + Corner + Ratio + (1|Colony), data = BroodCentDistAlatesRD2Plot))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(ToBrood ~ Nest + Sex + Day + Corner + Ratio + (1 | Colony), data = BroodCentDistAlatesRD2Plot))
+r.squaredGLMM(lmer(ToBrood ~ Nest + Sex + Day + Corner + Ratio + (1|Colony), data = BroodCentDistAlatesRD2Plot))
 
 ####################################################################################################################
-# PLOTS AND ANALYSES: Spatial fidelity and occurrence zone sizes & nest shape
+# PLOTS AND ANALYSES: Scaled spatial fidelity and occurrence zones
 # The scripts below are to analyze and visualize: 
-# Worker spatial fidelity and occurrence zone sizes, and consider how they relate to nest shape
+# Scaled worker spatial fidelity and occurrence zone sizes, and consider how they relate to nest shape
 ####################################################################################################################
 
 # SPATIAL FIDELITY ZONE SIZE AND NEST SHAPE
@@ -1717,20 +1717,128 @@ FidZone.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
                       color = "grey25", 
+                      alpha = 0.85,
+                      width = 0.5,
+                      lwd = 1.25) +  
+  theme_transparent() +  
+  theme(legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 4) 
+
+# Low density treatment
+FidZone.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                      filter(Colony > 10) %>% arrange(Nest), 
+                    aes(x = Nest, y = SFZ, fill = Nest),
+                    position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.85,
+                      width = 0.5,
+                      lwd = 1.25) +  
+  theme_transparent() +  
+  theme(legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  ylim(0, 4) 
+
+# OCCURRENCE ZONE SIZE AND NEST SHAPE
+# BOXPLOTS
+# High density treatment
+Occur.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                    filter(Colony < 11) %>% arrange(Nest), 
+                  aes(x = Nest, y = Occur, fill = Nest),
+                  position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.85,
+                      width = 0.5,
+                      lwd = 1.25) +  
+  theme_transparent() +  
+  theme(legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)) 
+
+# Low density treatment
+Occur.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                    filter(Colony > 10) %>% arrange(Nest), 
+                  aes(x = Nest, y = Occur, fill = Nest),
+                  position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
+                      alpha = 0.85,
+                      width = 0.5,
+                      lwd = 1.25) +  
+  theme_transparent() +  
+  theme(legend.position = "none") +
+  scale_fill_manual(breaks = c("Tube", "Circle"), 
+                    name = "Nest",
+                    values = c("red", "blue")) +
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)) 
+
+
+# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# SFZ - Worker spatial fidelity zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations and at least 15% of total observations
+# FIXED EFFECTS 
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+summary(lmer(SFZ ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(SFZ ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
+# RESPONSE VARIABLE
+# Occur - Worker occurrence zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations
+# FIXED EFFECTS 
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+summary(lmer(Occur ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(Occur ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
+
+####################################################################################################################
+# PLOTS AND ANALYSES: True spatial fidelity and occurrence zones (cm^2)
+# The scripts below are to analyze and visualize: 
+# True worker spatial fidelity and occurrence zone sizes (cm^2), and consider how they relate to nest shape
+####################################################################################################################
+
+# SPATIAL FIDELITY ZONE SIZE AND NEST SHAPE
+# High density treatment
+scaleFUNArea <- function(x) sprintf("%.1f", x)
+FidZoneArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                          filter(Colony < 11) %>% arrange(Nest), 
+                        aes(x = Nest, y = SFZ_Area, fill = Nest),
+                        position = position_dodge(2)) + 
+  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
+                      aes(fill = Nest), 
+                      color = "grey25", 
                       alpha = 0.65,
                       width = 0.15,
                       lwd = 1.25,
-                      fatten = 0) +  
+                      fatten = 2) +  
   stat_histinterval(slab_alpha = 0.65,
                     slab_color = "black",
                     slab_size = 1.25,
                     point_interval = "median_qi",
-                    point_size = 4,
+                    point_size = 0,
                     interval_alpha = 0,
                     scale = 0.5,
                     justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE,
-                    breaks = c(0, 1, 2, 3, 4)) + # Creating bars around each histogram bin
+                    outline_bars = TRUE) + # Creating bars around each histogram bin
   xlab(NULL) + 
   ylab(NULL) +
   ggtitle("High density") +
@@ -1743,31 +1851,30 @@ FidZone.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 4) +
-  coord_flip()
+  coord_flip() +
+  scale_y_continuous(labels = scaleFUNArea, limits = c(0, 1))  
 
 # Low density treatment
-FidZone.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                      filter(Colony > 10) %>% arrange(Nest), 
-                    aes(x = Nest, y = SFZ, fill = Nest),
-                    position = position_dodge(2)) + 
+FidZoneArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                          filter(Colony > 10) %>% arrange(Nest), 
+                        aes(x = Nest, y = SFZ_Area, fill = Nest),
+                        position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
                       color = "grey25", 
                       alpha = 0.65,
                       width = 0.15,
                       lwd = 1.25,
-                      fatten = 0) +  
+                      fatten = 2) +  
   stat_histinterval(slab_alpha = 0.65,
                     slab_color = "black",
                     slab_size = 1.25,
                     point_interval = "median_qi",
-                    point_size = 4,
+                    point_size = 0,
                     interval_alpha = 0,
                     scale = 0.5,
                     justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE,
-                    breaks = c(0, 1, 2, 3, 4)) + # Creating bars around each histogram bin
+                    outline_bars = TRUE) + # Creating bars around each histogram bin
   xlab(NULL) + 
   ylab(NULL) +
   ggtitle("Low density") +
@@ -1784,51 +1891,50 @@ FidZone.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  ylim(0, 4) +
-  coord_flip()
+  coord_flip() +
+  scale_y_continuous(labels = scaleFUNArea, limits = c(0, 1.5))  
 
 #Compiling worker fidelity zone size plots
-FidZonePlot <- ggarrange(FidZone.1, FidZone.2,
-                         labels = c("(a)", "(b)"),
-                         label.x = 0.9,
-                         label.y = 0.9,
-                         font.label = list(size = 18, face = "plain"),
-                         ncol = 2, nrow = 1,
-                         common.legend = FALSE)
+FidZoneAreaPlot <- ggarrange(FidZoneArea.1, FidZoneArea.2,
+                             labels = c("(a)", "(b)"),
+                             label.x = 0.9,
+                             label.y = 0.9,
+                             font.label = list(size = 18, face = "plain"),
+                             ncol = 2, nrow = 1,
+                             common.legend = FALSE)
 
 # Annotating the compiled plots to include a common y-axis
-FidZonePlotFull <- annotate_figure(FidZonePlot,
-                                   top = NULL,
-                                   bottom = text_grob("Fidelity zone size", color = "black",
-                                                      size = 18),
-                                   left = NULL,
-                                   right = NULL
+FidZoneAreaPlotFull <- annotate_figure(FidZoneAreaPlot,
+                                       top = NULL,
+                                       bottom = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
+                                                          size = 18),
+                                       left = NULL,
+                                       right = NULL
 )
 
 # OCCURRENCE ZONE SIZE AND NEST SHAPE
 # BOXPLOTS
 # High density treatment
-Occur.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                    filter(Colony < 11) %>% arrange(Nest), 
-                  aes(x = Nest, y = Occur, fill = Nest),
-                  position = position_dodge(2)) + 
+OccurArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
+                        filter(Colony < 11) %>% arrange(Nest), 
+                      aes(x = Nest, y = Occur_Area, fill = Nest),
+                      position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
                       color = "grey25", 
                       alpha = 0.65,
                       width = 0.15,
                       lwd = 1.25,
-                      fatten = 0) +  
+                      fatten = 2) +  
   stat_histinterval(slab_alpha = 0.65,
                     slab_color = "black",
                     slab_size = 1.25,
                     point_interval = "median_qi",
-                    point_size = 4,
+                    point_size = 0,
                     interval_alpha = 0,
                     scale = 0.5,
                     justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE,
-                    breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) + # Creating bars around each histogram bin
+                    outline_bars = TRUE) + # Creating bars around each histogram bin
   xlab(NULL) + 
   ylab(NULL) +
   ggtitle("Low density") +
@@ -1842,31 +1948,30 @@ Occur.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)) +
-  coord_flip()
+  coord_flip() +
+  scale_y_continuous(labels = scaleFUNArea, limits = c(0, 2.5))  
 
 # Low density treatment
-Occur.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                    filter(Colony > 10) %>% arrange(Nest), 
-                  aes(x = Nest, y = Occur, fill = Nest),
-                  position = position_dodge(2)) + 
+OccurArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
+                        filter(Colony > 10) %>% arrange(Nest), 
+                      aes(x = Nest, y = Occur_Area, fill = Nest),
+                      position = position_dodge(2)) + 
   stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
                       aes(fill = Nest), 
                       color = "grey25", 
                       alpha = 0.65,
                       width = 0.15,
                       lwd = 1.25,
-                      fatten = 0) +  
+                      fatten = 2) +  
   stat_histinterval(slab_alpha = 0.65,
                     slab_color = "black",
                     slab_size = 1.25,
                     point_interval = "median_qi",
-                    point_size = 4,
+                    point_size = 0,
                     interval_alpha = 0,
                     scale = 0.5,
                     justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE,
-                    breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9)) + # Creating bars around each histogram bin
+                    outline_bars = TRUE) + # Creating bars around each histogram bin
   xlab(NULL) + 
   ylab(NULL) +
   ggtitle("Low density") +
@@ -1880,69 +1985,246 @@ Occur.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
   scale_fill_manual(breaks = c("Tube", "Circle"), 
                     name = "Nest",
                     values = c("red", "blue")) +
-  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)) +
-  coord_flip()
+  coord_flip() +
+  scale_y_continuous(labels = scaleFUNArea, limits = c(0, 4))  
 
 # Compiling worker occurrence zone size plots
-OccurZonePlot <- ggarrange(Occur.1, Occur.2,
-                           labels = c("(c)", "(d)"),
-                           label.x = 0.9,
-                           label.y = 0.8,
-                           font.label = list(size = 18, face = "plain"),
-                           ncol = 2, nrow = 1,
-                           common.legend = FALSE)
+OccurZoneAreaPlot <- ggarrange(OccurArea.1, OccurArea.2,
+                               labels = c("(c)", "(d)"),
+                               label.x = 0.9,
+                               label.y = 0.8,
+                               font.label = list(size = 18, face = "plain"),
+                               ncol = 2, nrow = 1,
+                               common.legend = FALSE)
 
-# Annotate the combined plots to include a common y-axis 
-OccurZonePlotFull <- annotate_figure(OccurZonePlot,
-                                     top = NULL,
-                                     bottom = text_grob("Occurrence zone size", color = "black",
-                                                        size = 18),
-                                     left = NULL,
-                                     right = NULL
+# Annotating the compiled plots to include a common y-axis
+OccurZoneAreaPlotFull <- annotate_figure(OccurZoneAreaPlot,
+                                         top = NULL,
+                                         bottom = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
+                                                            size = 18),
+                                         left = NULL,
+                                         right = NULL
 )
 
 # Compile the spatial fidelity and occurrence zone plots
-FidOccurFullPlot <- ggarrange(FidZonePlotFull, OccurZonePlotFull,
-                            ncol = 1, nrow = 2,
-                            common.legend = TRUE)
+FidOccurZoneAreaPlot <- ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
+                                  ncol = 1, nrow = 2,
+                                  common.legend = TRUE)
 
 # Save plot as a PDF
-ggsave(file = "Fig8.pdf", plot = FidOccurFullPlot, width = 10.4, height = 10.4, units = "in")
+ggsave(file = "Fig6.pdf", plot = FidOccurZoneAreaPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
-# SFZ - Worker spatial fidelity zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations and at least 15% of total observations
+# SFZ_Area - True worker fidelity zone size (cm^2), zones have at least 7 observations and be at least 15% of the total observations
 # FIXED EFFECTS 
 # Nest - Nest shape (Tube / Circle)
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ ~ Nest * Density + (1|Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-  
+summary(lmer(SFZ_Area ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
+
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ ~ Nest * Density + + (1|Colony) + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+r.squaredGLMM(lmer(SFZ_Area ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
 # RESPONSE VARIABLE
-# Occur - Worker occurrence zone size (0 - 1, where 1 is the entire area of the nest), zones have at least 3 observations
+# Occur_Area - True worker occurrence zone size (cm^2), zones have at least 7 observations
 # FIXED EFFECTS 
 # Nest - Nest shape (Tube / Circle)
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur ~ Nest * Density + + (1|Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+summary(lmer(Occur_Area ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur ~ Nest * Density + + (1|Colony) + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+r.squaredGLMM(lmer(Occur_Area ~ Nest * Density + (1|Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
-# Function to create large points in a geom_point legend
-large_points <- function(data, params, size) {
-  # Multiply by some number, it doesn't matter what value, but larger numbers = large sized points in the legend
-  data$size <- data$size * 2.5
-  draw_key_point(data = data, params = params, size = size)
-}
+####################################################################################################################
+# PLOTS AND ANALYSES: Spatial fidelity and occurrence zone sizes (cm^2) & colony size
+# The scripts below are to analyze and visualize: 
+# Worker spatial fidelity and occurrence zone sizes(cm^2), and consider how they relate colony size
+####################################################################################################################
+
+# Spatial fidelity zone size and number of observations for an individual
+SFZCol1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest), 
+                  aes(x = Number.ants, y = SFZ_Area, 
+                      color = Nest,
+                      linetype = Nest,
+                      shape = Nest)) +
+  xlab(NULL) +
+  ylab(expression(paste('Fidelity zone size ('*cm^2*')'))) +
+  ggtitle("High density") +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 5, height = 0.05) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 20, color = "black"),
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 1))  
+
+# Low density treatment
+SFZCol2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
+                  aes(x = Number.ants, y = SFZ_Area, 
+                      color = Nest,
+                      linetype = Nest,
+                      shape = Nest)) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 5, height = 0.05) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 1.75))  
+
+# Occurrence zone size and number of observations for an individual
+OccurCol1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest), 
+                    aes(x = Number.ants, y = Occur_Area, 
+                        color = Nest,
+                        linetype = Nest,
+                        shape = Nest)) +
+  xlab(NULL) +
+  ylab(expression(paste('Occurrence zone size ('*cm^2*')'))) +
+  ggtitle("High density") +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 5, height = 0.05) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black") +
+  theme_pubclean() + 
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 20, color = "black"),
+        plot.title = element_text(size = 20, color = "white", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 3))  
+
+# Low density treatment
+OccurCol2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
+                    aes(x = Number.ants, y = Occur_Area, 
+                        color = Nest,
+                        linetype = Nest,
+                        shape = Nest)) +
+  xlab(NULL) +
+  ylab(NULL) +
+  ggtitle("Low density") +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 5, height = 0.05) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black") +
+  theme_pubclean() +  
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 20, color = "white", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 4)) 
+
+# Compiling worker true occurrence zone size vs. colony size plots
+SFZOccurZoneColPlot <- ggarrange(SFZCol1, SFZCol2, OccurCol1, OccurCol2,
+                                 labels = c("(a)", "(b)", "(c)", "(d)"),
+                                 label.x = 0.9,
+                                 label.y = 0.995,
+                                 font.label = list(size = 18, face = "plain"),
+                                 ncol = 2, nrow = 2,
+                                 common.legend = TRUE)
+
+# Annotate the compiled plots to include a common x-axis
+FidOccurColSizePlot <- annotate_figure(SFZOccurZoneColPlot,
+                                       top = NULL,
+                                       bottom = text_grob("Number of workers", color = "black",
+                                                          size = 18, x = 0.525),
+                                       left = NULL,
+                                       right = NULL
+)
+
+# Save plot as a PDF
+ggsave(file = "Fig7.pdf", plot = FidOccurColSizePlot, width = 10.4, height = 10.4, units = "in")
+
+# LINEAR MIXED EFFECTS MODEL: Worker fidelity zone size (scaled) and the number of workers in a colony (colony size)
+# RESPONSE VARIABLE
+# SFZ - Worker fidelity zone size 
+# FIXED EFFECTS 
+# Number.ants - The number of workers in a colony
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+summary(lmer(SFZ_Area ~ Number.ants * Nest * Density + (1|Colony), WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(SFZ_Area ~ Number.ants * Nest * Density + (1|Colony), WorkerDistScaledRD1_RD2SFZWorking))
+
+# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and the number of workers in a colony (colony size)
+# RESPONSE VARIABLE
+# Occur - Worker occurrence zone size 
+# FIXED EFFECTS 
+# Number.ants - The number of workers in a colony
+# Nest - Nest shape (Tube / Circle)
+# Density - Nest density (High / Low)
+# RANDOM EFFECTS
+# (1|Colony) - Colony identification 
+summary(lmer(Occur_Area ~ Number.ants * Nest * Density + (1|Colony), WorkerDistScaledRD1_RD2SFZWorking))
+
+# Marginal and conditional R-squared, showing the influence of the random effect on the model
+r.squaredGLMM(lmer(Occur_Area ~ Number.ants * Nest * Density + (1|Colony), WorkerDistScaledRD1_RD2SFZWorking))
+
 
 ####################################################################################################################
 # PLOTS AND ANALYSES: Spatial fidelity and occurrence zone sizes & distances from the nest entrance
@@ -1953,52 +2235,29 @@ large_points <- function(data, params, size) {
 # FIDELITY ZONE SIZE AND DISTANCE TO THE NEST ENTRANCE
 # LINE PLOTS
 # High density treatment
+scaleFUNDist <- function(x) sprintf("%.1f", x)
 SFZDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest), 
-                   aes(x = MeanScaledDist, y = SFZ, 
-                       linetype = Nest,
-                       color = Nest, 
-                       shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+                        aes(x = MeanScaledDist, y = SFZ, 
+                            color = Nest,
+                            linetype = Nest,
+                            shape = Nest)) +
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("High density") +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black", alpha = 0) +
+  ggtitle("High density") +
   theme_pubclean() +  
-  theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
-        legend.position = "none") +
-  scale_color_manual(breaks = c("Circle", "Tube"), 
-                     name = "Nest",
-                     values = c("blue", "red"),
-                     labels = c("Circle", "Tube")) +
-  xlim(0, 1) +
-  ylim(0, 4)
-
-# Low density treatment
-SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
-                 aes(x = MeanScaledDist, y = SFZ, 
-                     linetype = Nest,
-                     color = Nest,
-                     shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
-  xlab(NULL) +
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, color = "black"),
-        axis.text.y = element_text(size = 18, color = "white"),
+  theme(axis.text = element_text(size = 20, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1, 0.71),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 18, color = "black"),
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
@@ -2006,111 +2265,163 @@ SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density =
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  xlim(0, 1) +
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1.1)) +  
   ylim(0, 4)
 
-# Compiling worker fidelity zone size v. worker scaled distance to the nest entrance plots
-SFZDistPlot <- ggarrange(SFZDist1, SFZDist2,
-                         labels = c("(a)", "(b)"),
-                         label.x = 0.9,
-                         font.label = list(size = 18, face = "plain"),
-                         ncol = 2, nrow = 1,
-                         common.legend = FALSE)
-
-# Annotating the compiled plots to include a common y-axis
-SFZFullDistPlot <- annotate_figure(SFZDistPlot,
-                                   top = NULL,
-                                   bottom = NULL,
-                                   left = text_grob("Fidelity zone size", color = "black",
-                                                    size = 18, rot = 90),
-                                   right = NULL
-)
-
-# OCCURRENCE ZONE SIZE AND DISTANCE TO THE NEST ENTRANCE
-# LINE PLOTS
-# High density treatment
-OccurDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest),
-                   aes(x = MeanScaledDist, y = Occur,
-                       linetype = Nest,
-                       color = Nest,
-                       shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+# Low density treatment
+SFZDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
+                        aes(x = MeanScaledDist, y = SFZ, 
+                            color = Nest,
+                            linetype = Nest,
+                            shape = Nest)) +
   xlab(NULL) +
   ylab(NULL) +
-  ggtitle("High density") +
+  ggtitle("Low density") +
+  geom_point(key_glyph = large_points, size = 6, alpha = 0.33) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black", alpha = 0) +
   theme_pubclean() +  
-  theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
+  theme(axis.text = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
-        legend.position = "none") +
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  xlim(0, 1) +
-  ylim(1, 10)
+  guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1.1)) +  
+  ylim(0, 4)
 
-#Low density treatment
+SFZ_grob.1 = ggplotGrob(FidZone.1)
+
+SFZ_grob.2 = ggplotGrob(FidZone.2)
+
+fidymin <- min(WorkerDistScaledRD1_RD2SFZWorking$SFZ); fidymax <- max(WorkerDistScaledRD1_RD2SFZWorking$SFZ)
+
+SFZDist.Box1 <- SFZDist1 + annotation_custom(grob = SFZ_grob.1, xmin = 0.85, xmax = 1.15,
+                                                       ymin = fidymin, ymax = fidymax
+)
+
+SFZDist.Box2 <- SFZDist2 + annotation_custom(grob = SFZ_grob.2, xmin = 0.85, xmax = 1.15,
+                                                       ymin = fidymin, ymax = fidymax
+)
+
+# Compiling worker fidelity zone size v. worker scaled distance to the brood center plots
+SFZDistPlot <- ggarrange(SFZDist.Box1, SFZDist.Box2,
+                              labels = c("(a)", "(b)"),
+                              label.x = 0.9,
+                              font.label = list(size = 20, face = "plain"),
+                              ncol = 2, nrow = 1,
+                              common.legend = TRUE)
+
+# Annotating the compiled plots to include a common y-axis
+SFZFullDistPlot <- annotate_figure(SFZDistPlot,
+                                        top = NULL,
+                                        bottom = NULL,
+                                        left = text_grob("Scaled fidelity zone size", color = "black",
+                                                         size = 20, rot = 90),
+                                        right = NULL
+)
+
+# OCCURRENCE ZONE SIZE AND DISTANCE TO THE BROOD CENTER
+# LINE PLOTS
+# High density treatment
+OccurDist1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "High") %>% arrange(Nest),
+                          aes(x = MeanScaledDist, y = Occur,
+                              color = Nest,
+                              linetype = Nest,
+                              shape = Nest)) +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 2, color = "black") +
+  ggtitle("High density") +
+  theme_pubclean() +  
+  theme(axis.ticks = element_blank(),
+        axis.text = element_text(size = 20, color = "black"),
+        axis.title = element_blank(),
+        plot.title = element_text(size = 20, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        legend.position = "none") +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
+  xlab(NULL) +
+  ylab(NULL) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red"),
+                     labels = c("Circle", "Tube")) +
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1.1)) +  
+  scale_y_continuous(labels = scaleFUN, limits = c(1, 10))
+
+# Low density treatment
 OccurDist2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>% filter(Density == "Low") %>% arrange(Nest),
-                     aes(x = MeanScaledDist, y = Occur,
-                         color = Nest, 
-                         linetype = Nest,
-                         shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+                          aes(x = MeanScaledDist, y = Occur, 
+                              color = Nest, 
+                              linetype = Nest,
+                              shape = Nest)) +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 2, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
+        axis.text = element_text(size = 20, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        plot.title = element_text(size = 20, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  xlim(0, 1) +
-  ylim(1, 10)
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1.1)) +  
+  scale_y_continuous(labels = scaleFUN, limits = c(1, 10))
 
-# Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
-OccurDistPlot <- ggarrange(OccurDist1, OccurDist2,
-                           labels = c("(c)", "(d)"),
-                           label.x = 0.9,
-                           font.label = list(size = 18, face = "plain"),
-                           ncol = 2, nrow = 1,
-                           common.legend = FALSE)
+Occur_grob.1 = ggplotGrob(Occur.1)
 
-# Annotating the compiled plots to include a common y-axis
-OccurFullDistPlot <- annotate_figure(OccurDistPlot,
-                                       top = NULL,
-                                       bottom = NULL,
-                                       left = text_grob("Occurrence zone size", color = "black",
-                                                        size = 18, rot = 90),
-                                       right = NULL
+Occur_grob.2 = ggplotGrob(Occur.1)
+
+occurymin <- min(WorkerDistScaledRD1_RD2SFZWorking$Occur); occurymax <- max(WorkerDistScaledRD1_RD2SFZWorking$Occur)
+
+OccurDist.Box1 <- OccurDist1 + annotation_custom(grob = Occur_grob.1, xmin = 0.9, xmax = 1.15,
+                                                           ymin = occurymin, ymax = occurymax
 )
 
-# Compile the spatial fidelity and occurrence zone v. worker scaled distance to the nest entrance plots and include a common legend
-FidOccurDistPlot <- ggarrange(SFZFullDistPlot, OccurFullDistPlot,
-                                ncol = 1, nrow = 2,
-                            common.legend = TRUE)
+OccurDist.Box2 <- OccurDist2 + annotation_custom(grob = Occur_grob.1, xmin = 0.9, xmax = 1.15,
+                                                           ymin = occurymin, ymax = occurymax
+)
+
+# Compile the spatial fidelity and occurrence zone v. worker scaled distance to the brood center plots and include a common legend
+OccurDistPlot <- ggarrange(OccurDist.Box1, OccurDist.Box2,
+                                labels = c("(c)", "(d)"),
+                                label.x = 0.9,
+                                font.label = list(size = 20, face = "plain"),
+                                ncol = 2, nrow = 1,
+                                common.legend = FALSE)
 
 # Annotate the compiled plots to include a common x-axis
-FidOccurDistFullPlot <- annotate_figure(FidOccurDistPlot,
-                top = NULL,
-                bottom = text_grob("Average scaled distance to nest entrance", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
+OccurFullDistPlot <- annotate_figure(OccurDistPlot,
+                                          top = NULL,
+                                          bottom = text_grob("Average scaled distance to entrance", color = "black",
+                                                             size = 20, x = 0.525),
+                                          left = text_grob("Scaled occurrence zone size", color = "black",
+                                                           size = 20, rot = 90),
+                                          right = NULL
 )
 
+
+FidOccurDistPlot <- ggarrange(SFZFullDistPlot, OccurFullDistPlot,
+                                   ncol = 1, nrow = 2,
+                                   common.legend = FALSE)
+
 # Save plot as a PDF
-ggsave(file = "Fig9.pdf", plot = FidOccurDistFullPlot, width = 10.4, height = 10.4, units = "in")
+ggsave(file = "Fig_A10.pdf", plot = FidOccurDistPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2121,11 +2432,10 @@ ggsave(file = "Fig9.pdf", plot = FidOccurDistFullPlot, width = 10.4, height = 10
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+summary(lmer(SFZ ~ MeanScaledDist * Nest * Density + (1 | Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorkingFid))
+r.squaredGLMM(lmer(SFZ ~ MeanScaledDist * Nest * Density + (1 | Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2136,11 +2446,10 @@ r.squaredGLMM(lmer(SFZ ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|Col
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+summary(lmer(Occur ~ MeanScaledDist * Nest * Density + (1 | Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur ~ MeanScaledDist * Nest * Density + (1 | Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
+r.squaredGLMM(lmer(Occur ~ MeanScaledDist * Nest * Density + (1 | Colony), data = WorkerDistScaledRD1_RD2SFZWorking))
 
 ####################################################################################################################
 # PLOTS AND ANALYSES: Spatial fidelity and occurrence zone sizes & distances from the nest entrance and brood center
@@ -2159,21 +2468,29 @@ SFZBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Hi
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("High density") +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_line(stat = "smooth", method = lm, se = FALSE, size = 1.25, color = "black", alpha = 0) +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black", alpha = 0) +
+  ggtitle("High density") +
   theme_pubclean() +  
-  theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
+        axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
-        legend.position = "none") +
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
+        legend.key = element_blank(),
+        legend.justification = c(1, -0.7),
+        legend.position = c(1, 0.71),
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
+        legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  xlim(0, 0.75) +
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 0.9)) +  
   ylim(0, 4)
 
 # Low density treatment
@@ -2185,20 +2502,20 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Lo
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("Low density") +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_line(stat = "smooth", method = lm, se = FALSE, size = 1.25, color = "black", alpha = 0) +
+  geom_point(key_glyph = large_points, size = 6, alpha = 0.33) +
+  geom_line(stat = "smooth", method = lm, se = FALSE, size = 2, color = "black", alpha = 0) +
   theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, color = "black"),
-        axis.text.y = element_text(size = 18, color = "white"),
+  theme(axis.text.x = element_text(size = 20, color = "black"),
+        axis.text.y = element_text(size = 20, color = "black"),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = 0.5),
+        plot.title = element_text(size = 20, color = "black", hjust = 0.875, vjust = 0.5),
         legend.key = element_blank(),
         legend.justification = c(1, -0.7),
         legend.position = c(1, 0.71),
         legend.direction = "horizontal",
-        legend.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 18, color = "black"),
+        legend.text = element_text(size = 20, color = "black"),
+        legend.title = element_text(size = 20, color = "black"),
         legend.key.size = unit(1, 'cm')) +
   labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
@@ -2206,23 +2523,39 @@ SFZBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Lo
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
   guides(shape = guide_legend(override.aes = list(alpha = 0.75))) +
-  xlim(0, 0.75) +
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1)) +  
   ylim(0, 4)
 
-# Compiling worker fidelity zone size v. worker scaled distance to the brood center plots and include a common legend
-SFZBroodDistPlot <- ggarrange(SFZBroodDist1, SFZBroodDist2,
+SFZ_grob.1 = ggplotGrob(FidZone.1)
+
+SFZ_grob.2 = ggplotGrob(FidZone.2)
+
+fidxmin <- min(BroodCentDistWorkersSFZ$MeanToBrood); fidxmax <- max(BroodCentDistWorkersSFZ$MeanToBrood)
+
+fidymin <- min(BroodCentDistWorkersSFZ$SFZ); fidymax <- max(BroodCentDistWorkersSFZ$SFZ)
+
+SFZBroodDist.Box1 <- SFZBroodDist1 + annotation_custom(grob = SFZ_grob.1, xmin = 0.6, xmax = 0.95,
+                                                       ymin = fidymin, ymax = fidymax
+)
+
+SFZBroodDist.Box2 <- SFZBroodDist2 + annotation_custom(grob = SFZ_grob.2, xmin = 0.65, xmax = 1,
+                                                       ymin = fidymin, ymax = fidymax
+)
+
+# Compiling worker fidelity zone size v. worker scaled distance to the brood center plots
+SFZBroodDistPlot <- ggarrange(SFZBroodDist.Box1, SFZBroodDist.Box2,
                               labels = c("(a)", "(b)"),
                               label.x = 0.9,
-                              font.label = list(size = 18, face = "plain"),
+                              font.label = list(size = 20, face = "plain"),
                               ncol = 2, nrow = 1,
-                              common.legend = FALSE)
+                              common.legend = TRUE)
 
 # Annotating the compiled plots to include a common y-axis
 SFZFullBroodDistPlot <- annotate_figure(SFZBroodDistPlot,
                                         top = NULL,
                                         bottom = NULL,
-                                        left = text_grob("Fidelity zone size", color = "black",
-                                                         size = 18, rot = 90),
+                                        left = text_grob("Scaled fidelity zone size", color = "black",
+                                                         size = 20, rot = 90),
                                         right = NULL
 )
 
@@ -2234,23 +2567,24 @@ OccurBroodDist1 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "
                               color = Nest,
                               linetype = Nest,
                               shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 2, color = "black") +
   ggtitle("High density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
+        axis.text = element_text(size = 20, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        plot.title = element_text(size = 20, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   xlab(NULL) +
   ylab(NULL) +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  xlim(0, 0.75) +
-  ylim(1, 10)
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 0.9)) +  
+  scale_y_continuous(labels = scaleFUN, limits = c(1, 10))
 
 # Low density treatment
 OccurBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "Low") %>% arrange(Nest),
@@ -2258,57 +2592,67 @@ OccurBroodDist2 <- ggplot(data = BroodCentDistWorkersSFZ %>% filter(Density == "
                               color = Nest, 
                               linetype = Nest,
                               shape = Nest)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.33) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
+  geom_point(size = 6, alpha = 0.33) +
+  geom_smooth(method = 'lm', se = FALSE, size = 2, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
   ggtitle("Low density") +
   theme_pubclean() +  
   theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
+        axis.text = element_text(size = 20, color = "black"),
         axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
+        plot.title = element_text(size = 20, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
         legend.position = "none") +
+  labs(color = "Nest", linetype = "Nest", shape = "Nest") +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red"),
                      labels = c("Circle", "Tube")) +
-  xlim(0, 0.75) +
-  ylim(1, 10)
+  scale_x_continuous(labels = scaleFUNDist, limits = c(0, 1)) +  
+  scale_y_continuous(labels = scaleFUN, limits = c(1, 10))
 
-# Compiling worker occurrence zone size v. worker scaled distance to the nest entrance plots
-OccurBroodDistPlot <- ggarrange(OccurBroodDist1, OccurBroodDist2,
-                                labels = c("(c)", "(d)"),
-                                label.x = 0.9,
-                                font.label = list(size = 18, face = "plain"),
-                                ncol = 2, nrow = 1,
-                                common.legend = FALSE)
+Occur_grob.1 = ggplotGrob(Occur.1)
 
-# Annotating the compiled plots to include a common y-axis
-OccurFullBroodDistPlot <- annotate_figure(OccurBroodDistPlot,
-                                     top = NULL,
-                                     bottom = NULL,
-                                     left = text_grob("Occurrence zone size", color = "black",
-                                                      size = 18, rot = 90),
-                                     right = NULL
+Occur_grob.2 = ggplotGrob(Occur.1)
+
+occurxmin <- min(BroodCentDistWorkersSFZ$MeanToBrood); occurxmax <- max(BroodCentDistWorkersSFZ$MeanToBrood)
+
+occurymin <- min(BroodCentDistWorkersSFZ$Occur); occurymax <- max(BroodCentDistWorkersSFZ$Occur)
+
+OccurBroodDist.Box1 <- OccurBroodDist1 + annotation_custom(grob = Occur_grob.1, xmin = 0.6, xmax = 0.95,
+                                                           ymin = occurymin, ymax = occurymax
+)
+
+OccurBroodDist.Box2 <- OccurBroodDist2 + annotation_custom(grob = Occur_grob.1, xmin = 0.65, xmax = 1,
+                                                           ymin = occurymin, ymax = occurymax
 )
 
 # Compile the spatial fidelity and occurrence zone v. worker scaled distance to the brood center plots and include a common legend
-FidOccurBroodDistPlot <- ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
-                            ncol = 1, nrow = 2,
-                            common.legend = TRUE)
+OccurBroodDistPlot <- ggarrange(OccurBroodDist.Box1, OccurBroodDist.Box2,
+                                labels = c("(c)", "(d)"),
+                                label.x = 0.9,
+                                font.label = list(size = 20, face = "plain"),
+                                ncol = 2, nrow = 1,
+                                common.legend = FALSE)
 
-# Annotating the compiled plots to include a common x-axis
-FidOccurBroodDistFullPlot <- annotate_figure(FidOccurBroodDistPlot,
-                top = NULL,
-                bottom = text_grob("Average scaled distance to brood center", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
+# Annotate the compiled plots to include a common x-axis
+OccurFullBroodDistPlot <- annotate_figure(OccurBroodDistPlot,
+                                          top = NULL,
+                                          bottom = text_grob("Average scaled distance to brood center", color = "black",
+                                                             size = 20, x = 0.525),
+                                          left = text_grob("Scaled occurrence zone size", color = "black",
+                                                           size = 20, rot = 90),
+                                          right = NULL
 )
 
+
+FidOccurBroodDistPlot <- ggarrange(SFZFullBroodDistPlot, OccurFullBroodDistPlot,
+                              ncol = 1, nrow = 2,
+                              common.legend = FALSE)
+
+
 # Save plot as a PDF
-ggsave(file = "Fig10.pdf", plot = FidOccurBroodDistFullPlot, width = 10.4, height = 10.4, units = "in")
+ggsave(file = "Fig8.pdf", plot = FidOccurBroodDistPlot, width = 10.4, height = 10.4, units = "in")
 
 # LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2319,11 +2663,10 @@ ggsave(file = "Fig10.pdf", plot = FidOccurBroodDistFullPlot, width = 10.4, heigh
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+summary(lmer(SFZ ~ MeanToBrood * Nest * Density + (1 | Colony), data = BroodCentDistWorkersSFZ))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+r.squaredGLMM(lmer(SFZ ~ MeanToBrood * Nest * Density + (1 | Colony), data = BroodCentDistWorkersSFZ))
 
 # LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and nest shape
 # RESPONSE VARIABLE
@@ -2334,11 +2677,13 @@ r.squaredGLMM(lmer(SFZ ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorI
 # Density - Nest density (High / Low)
 # RANDOM EFFECTS
 # (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+summary(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony), data = BroodCentDistWorkersSFZ))
 
 # Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|ColorID), data = BroodCentDistWorkersSFZ))
+r.squaredGLMM(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony), data = BroodCentDistWorkersSFZ))
+
+# ANOVA to test whether individual ants hold spatial fidelity in relation to distance from the brood center over all observations
+summary(aov(ToBrood ~ Nest * Density + AntIDColNest, data = BroodCentDistWorkersSFZFull))
 
 ####################################################################################################################
 # SUPPLEMENTARY PLOTS
@@ -2347,390 +2692,101 @@ r.squaredGLMM(lmer(Occur ~ MeanToBrood * Nest * Density + (1 | Colony) + (1|Colo
 # Spatial fidelity zone size and number of observations for an individual
 # NOTE The figures are produced by changing the number of observations required to > 2 in the FidelityZones function in the SFZFunctions.R script
 SFZFreq <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = SFZ, x = Freq)) +
-  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
   xlab(NULL) +
-  ylab("Fidelity zone size") +
+  ylab("Scaled fidelity zone size") +
   theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
+  theme(axis.text.x = element_text(size = 20, colour = "black"),
+        axis.title = element_text(size = 20 ,colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
         axis.ticks = element_blank(),
         legend.key = element_blank(),
         legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
+        legend.text = element_text(size = 20, colour = "black"),
+        legend.title = element_text(size = 20, colour = "black")) +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red")) 
 
 # Occurrence zone size and number of observations for an individual
 OccurFreq <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = Occur, x = Freq)) +
-  geom_jitter(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
   xlab(NULL) +
-  ylab("Occurrence zone size") +
+  ylab("Scaled occurrence zone size") +
   theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
+  theme(axis.text.x = element_text(size = 20, colour = "black"),
+        axis.title = element_text(size = 20 ,colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
         axis.ticks = element_blank(),
         legend.key = element_blank(),
         legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
+        legend.text = element_text(size = 20, colour = "black"),
+        legend.title = element_text(size = 20, colour = "black")) +
   scale_color_manual(breaks = c("Circle", "Tube"), 
                      name = "Nest",
                      values = c("blue", "red")) +
-  ylim(0, 10)
+  scale_y_continuous(labels = scaleFUN, limits = c(0, 10))   
+
+# True site fidelity (cm^2)
+SFZFreq_Area <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = SFZ_Area, x = Freq)) +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
+  xlab(NULL) +
+  ylab(expression(paste('Fidelity zone size ('*cm^2*')'))) +
+  theme_pubclean() +
+  theme(axis.text.x = element_text(size = 20, colour = "black"),
+        axis.title = element_text(size = 20 ,colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
+        axis.ticks = element_blank(),
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 20, colour = "black"),
+        legend.title = element_text(size = 20, colour = "black")) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red")) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 3)) 
+
+# Occurrence zone size and number of observations for an individual
+OccurFreq_Area <- ggplot(data = FidelityZonesDataRD1_RD2Supp, aes(y = Occur_Area, x = Freq)) +
+  geom_jitter(size = 6, alpha = 0.5, aes(color = Nest, shape = Nest), width = 0.15, height = 0.005) +
+  xlab(NULL) +
+  ylab(expression(paste('Occurrence zone size ('*cm^2*')'))) +
+  theme_pubclean() +
+  theme(axis.text.x = element_text(size = 20, colour = "black"),
+        axis.title = element_text(size = 20 ,colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
+        axis.ticks = element_blank(),
+        legend.key = element_blank(),
+        legend.justification = c(1, 1),
+        legend.text = element_text(size = 20, colour = "black"),
+        legend.title = element_text(size = 20, colour = "black")) +
+  scale_color_manual(breaks = c("Circle", "Tube"), 
+                     name = "Nest",
+                     values = c("blue", "red")) +
+  scale_y_continuous(labels = scaleFUNDist, limits = c(0, 4)) 
 
 # Compiling worker site fidelity and observations plots
-Fid.OccurZoneFreqPlot <- ggarrange(SFZFreq, OccurFreq,
-                                   labels = c("(a)", "(b)"),
+Fid.OccurZoneFreqPlot <- ggarrange(SFZFreq, OccurFreq, SFZFreq_Area, OccurFreq_Area,
+                                   labels = c("(a)", "(b)", "(c)", "(d)"),
                                    label.x = 0.9,
-                                   font.label = list(size = 18, face = "plain"),
-                                   ncol = 2, nrow = 1,
+                                   label.y = 1.025,
+                                   font.label = list(size = 20, face = "plain"),
+                                   ncol = 2, nrow = 2,
                                    common.legend = TRUE)
 
 
 
 # Annotate the compiled plots to include a common x-axis
 FidOccurFreqFull <- annotate_figure(Fid.OccurZoneFreqPlot,
-                top = NULL,
-                bottom = text_grob("Number of observations", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
+                                    top = NULL,
+                                    bottom = text_grob("Number of observations", color = "black",
+                                                       size = 20, x = 0.525),
+                                    left = NULL,
+                                    right = NULL
 )
 
 # Save plot as a PDF
-ggsave(file = "Fig_A7.pdf", plot = FidOccurFreqFull, width = 10.4, height = 5.2, units = "in")
-
-####################################################################################################################
-# SUPPLEMENTARY PLOTS
-# SUPPLEMENTAL SFZ AREA PLOTS AND ANALYSES
-# SPATIAL FIDELITY ZONE SIZE (IN UNSCALED NEST AREA - cm^2) AND NEST SHAPE
-####################################################################################################################
-
-# SPATIAL FIDELITY ZONE SIZE AND NEST SHAPE
-# High density treatment
-FidZoneArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                      filter(Colony < 11) %>% arrange(Nest), 
-                    aes(x = Nest, y = SFZ_Area, fill = Nest),
-                    position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65,
-                      width = 0.15,
-                      lwd = 1.25,
-                      fatten = 0) +  
-  stat_histinterval(slab_alpha = 0.65,
-                    slab_color = "black",
-                    slab_size = 1.25,
-                    point_interval = "median_qi",
-                    point_size = 4,
-                    interval_alpha = 0,
-                    scale = 0.5,
-                    justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE) + # Creating bars around each histogram bin
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("High density") +
-  theme_pubclean() +  
-  theme(axis.text = element_text(size = 18, color = "black"),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -7.75),
-        legend.position = "none") +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  coord_flip() +
-  ylim(0, 1)
-
-# Low density treatment
-FidZoneArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                      filter(Colony > 10) %>% arrange(Nest), 
-                    aes(x = Nest, y = SFZ_Area, fill = Nest),
-                    position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65,
-                      width = 0.15,
-                      lwd = 1.25,
-                      fatten = 0) +  
-  stat_histinterval(slab_alpha = 0.65,
-                    slab_color = "black",
-                    slab_size = 1.25,
-                    point_interval = "median_qi",
-                    point_size = 4,
-                    interval_alpha = 0,
-                    scale = 0.5,
-                    justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE) + # Creating bars around each histogram bin
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, color = "black"),
-        axis.text.y = element_text(size = 18, color = "white"),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, color = "black", hjust = 0.875, vjust = -7.75),
-        legend.key = element_blank(),
-        legend.justification = c(1, -0.7),
-        legend.position = "none") +
-  guides(fill = guide_legend(title = "Nest", color = "black")) +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  coord_flip() +
-  ylim(0, 1.5)
-
-#Compiling worker fidelity zone size plots
-FidZoneAreaPlot <- ggarrange(FidZoneArea.1, FidZoneArea.2,
-                         labels = c("(a)", "(b)"),
-                         label.x = 0.9,
-                         label.y = 0.9,
-                         font.label = list(size = 18, face = "plain"),
-                         ncol = 2, nrow = 1,
-                         common.legend = FALSE)
-
-# Annotating the compiled plots to include a common y-axis
-FidZoneAreaPlotFull <- annotate_figure(FidZoneAreaPlot,
-                                       top = NULL,
-                                       bottom = text_grob(expression(paste('Fidelity zone size ('*cm^2*')')), color = "black",
-                                                        size = 18),
-                                       left = NULL,
-                                       right = NULL
-)
-
-# OCCURRENCE ZONE SIZE AND NEST SHAPE
-# BOXPLOTS
-# High density treatment
-OccurArea.1 <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking %>%
-                    filter(Colony < 11) %>% arrange(Nest), 
-                  aes(x = Nest, y = Occur_Area, fill = Nest),
-                  position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65,
-                      width = 0.15,
-                      lwd = 1.25,
-                      fatten = 0) +  
-  stat_histinterval(slab_alpha = 0.65,
-                    slab_color = "black",
-                    slab_size = 1.25,
-                    point_interval = "median_qi",
-                    point_size = 4,
-                    interval_alpha = 0,
-                    scale = 0.5,
-                    justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE) + # Creating bars around each histogram bin
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.ticks = element_blank(),
-        axis.text = element_text(size = 18, color = "black"),
-        axis.title = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
-        legend.position = "none",
-        legend.key = element_blank()) +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  coord_flip() +
-  ylim(0, 2.5)
-
-# Low density treatment
-OccurArea.2 <- ggplot(data = WorkerDistScaledRD1_RD2SFZFull %>%
-                    filter(Colony > 10) %>% arrange(Nest), 
-                  aes(x = Nest, y = Occur_Area, fill = Nest),
-                  position = position_dodge(2)) + 
-  stat_boxplot_custom(qs = c(0, 0.25, 0.5, 0.75, 1.00),
-                      aes(fill = Nest), 
-                      color = "grey25", 
-                      alpha = 0.65,
-                      width = 0.15,
-                      lwd = 1.25,
-                      fatten = 0) +  
-  stat_histinterval(slab_alpha = 0.65,
-                    slab_color = "black",
-                    slab_size = 1.25,
-                    point_interval = "median_qi",
-                    point_size = 4,
-                    interval_alpha = 0,
-                    scale = 0.5,
-                    justification = -0.2, # Separate the interval from the bottom of the histogram
-                    outline_bars = TRUE) + # Creating bars around each histogram bin
-  xlab(NULL) + 
-  ylab(NULL) +
-  ggtitle("Low density") +
-  theme_pubclean() +  
-  theme(axis.text.x = element_text(size = 18, color = "black"),
-        axis.text.y = element_text(size = 18, color = "white"),
-        axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        plot.title = element_text(size = 18, face = "bold", color = "white", hjust = 0.75, vjust = 0.5),
-        legend.position = "none") +
-  scale_fill_manual(breaks = c("Tube", "Circle"), 
-                    name = "Nest",
-                    values = c("red", "blue")) +
-  coord_flip() +
-  ylim(0, 4)
-
-# Compiling worker occurrence zone size plots
-OccurZoneAreaPlot <- ggarrange(OccurArea.1, OccurArea.2,
-                           labels = c("(c)", "(d)"),
-                           label.x = 0.9,
-                           label.y = 0.8,
-                           font.label = list(size = 18, face = "plain"),
-                           ncol = 2, nrow = 1,
-                           common.legend = FALSE)
-
-# Annotating the compiled plots to include a common y-axis
-OccurZoneAreaPlotFull <- annotate_figure(OccurZoneAreaPlot,
-                                       top = NULL,
-                                       bottom = text_grob(expression(paste('Occurrence zone size ('*cm^2*')')), color = "black",
-                                                          size = 18),
-                                       left = NULL,
-                                       right = NULL
-)
-
-# Compile the spatial fidelity and occurrence zone plots
-FidOccurZoneAreaPlot <- ggarrange(FidZoneAreaPlotFull, OccurZoneAreaPlotFull,
-                          ncol = 1, nrow = 2,
-                          common.legend = TRUE)
-
-
-# Save plot as a PDF
-ggsave(file = "Fig_A8.pdf", plot = FidOccurZoneAreaPlot, width = 10.4, height = 10.4, units = "in")
-
-# LINEAR MIXED EFFECTS MODEL: Worker spatial fidelity zone size (cm^2) and nest shape
-# RESPONSE VARIABLE
-# SFZ_Area - Worker spatial fidelity zone size (cm^2), zones have at least 3 observations 
-# FIXED EFFECTS 
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ_Area ~ Nest * Density + (1|Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ_Area ~ Nest * Density + (1|Colony) + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (cm^2) and nest shape
-# RESPONSE VARIABLE
-# Occur_Area - Worker spatial fidelity zone size (cm^2), 
-# FIXED EFFECTS 
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur_Area ~ Nest * Density + (1|Colony) + (1|ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur_Area ~ Nest * Density + (1|Colony) + (1 | ColorID), data = WorkerDistScaledRD1_RD2SFZWorking))
-
-####################################################################################################################
-# SUPPLEMENTARY PLOTS
-# NUMBER OBSERVATIONS AND COLONY SIZE
-####################################################################################################################
-# Spatial fidelity zone size and number of observations for an individual
-SFZCol <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking, aes(y = SFZ_Area, x = Number.ants, linetype = Density)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest)) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
-  xlab(NULL) +
-  ylab("Fidelity zone size") +
-  theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
-        axis.ticks = element_blank(),
-        legend.key = element_blank(),
-        legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
-  scale_color_manual(breaks = c("Circle", "Tube"), 
-                     name = "Nest",
-                     values = c("blue", "red")) +
-  ylim(0, 1.5)
-
-# Occurrence zone size and number of observations for an individual
-OccurCol <- ggplot(data = WorkerDistScaledRD1_RD2SFZWorking, aes(y = Occur_Area, x = Number.ants, linetype = Density)) +
-  geom_point(key_glyph = large_points, size = 3, alpha = 0.5, aes(color = Nest, shape = Nest)) +
-  geom_smooth(method = 'lm', se = FALSE, size = 1.25, color = "black") +
-  xlab(NULL) +
-  ylab("Occurrence zone size") +
-  theme_pubclean() +
-  theme(axis.text.x = element_text(size = 18, colour = "black"),
-        axis.title = element_text(size = 18 ,colour = "black"),
-        axis.text.y = element_text(size = 18, colour = "black"),
-        axis.ticks = element_blank(),
-        legend.key = element_blank(),
-        legend.justification = c(1, 1),
-        legend.text = element_text(size = 18, colour = "black"),
-        legend.title = element_text(size = 18, colour = "black")) +
-  scale_color_manual(breaks = c("Circle", "Tube"), 
-                     name = "Nest",
-                     values = c("blue", "red")) +
-  ylim(0, 4)
-
-# Compiling worker site fidelity and observations plots
-Fid.OccurZoneColPlot <- ggarrange(SFZCol, OccurCol,
-                                   labels = c("(a)", "(b)"),
-                                   label.x = 0.9,
-                                   font.label = list(size = 18, face = "plain"),
-                                   ncol = 2, nrow = 1,
-                                   common.legend = TRUE)
-
-
-
-# Annotate the compiled plots to include a common x-axis
-FidOccurColSizePlot <- annotate_figure(Fid.OccurZoneColPlot,
-                top = NULL,
-                bottom = text_grob("Number of workers", color = "black",
-                                   size = 18, x = 0.525),
-                left = NULL,
-                right = NULL
-)
-
-# Save plot as a PDF
-ggsave(file = "Fig_A9.pdf", plot = FidOccurColSizePlot, width = 10.4, height = 5.2, units = "in")
-
-# LINEAR MIXED EFFECTS MODEL: Worker fidelity zone size (scaled) and the number of workers in a colony (colony size)
-# RESPONSE VARIABLE
-# SFZ - Worker fidelity zone size 
-# FIXED EFFECTS 
-# Number.ants - The number of workers in a colony
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(SFZ_Area ~ Number.ants * Nest * Density + (1|Colony) + (1|ColorID), WorkerDistScaledRD1_RD2SFZWorking))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(SFZ_Area ~ Number.ants * Nest * Density + (1|Colony) + (1|ColorID), WorkerDistScaledRD1_RD2SFZWorking))
-
-# LINEAR MIXED EFFECTS MODEL: Worker occurrence zone size (scaled) and the number of workers in a colony (colony size)
-# RESPONSE VARIABLE
-# Occur - Worker occurrence zone size 
-# FIXED EFFECTS 
-# Number.ants - The number of workers in a colony
-# Nest - Nest shape (Tube / Circle)
-# Density - Nest density (High / Low)
-# RANDOM EFFECTS
-# (1|Colony) - Colony identification 
-# (1|ColorID) - Worker color identification marks on the head, thorax, abdomen 1, abdomen 2 (e.g. W,G,W,G)
-summary(lmer(Occur_Area ~ Number.ants * Nest * Density + (1|Colony) + (1|ColorID), WorkerDistScaledRD1_RD2SFZWorking))
-
-# Marginal and conditional R-squared, showing the influence of the random effect on the model
-r.squaredGLMM(lmer(Occur_Area ~ Number.ants * Nest * Density + (1|Colony) + (1|ColorID), WorkerDistScaledRD1_RD2SFZWorking))
+ggsave(file = "Fig_A7.pdf", plot = FidOccurFreqFull, width = 10.4, height = 10.4, units = "in")
 
 ####################################################################################################################
 # SUPPLEMENTARY PLOTS
@@ -2811,7 +2867,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony1 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A11.pdf", plot = DensityPlotColony1, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A12.pdf", plot = DensityPlotColony1, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 2
 # WORKERS
@@ -2885,7 +2941,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony2 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A12.pdf", plot = DensityPlotColony2, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A13.pdf", plot = DensityPlotColony2, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 3
 # WORKERS
@@ -2959,7 +3015,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony3 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A13.pdf", plot = DensityPlotColony3, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A14.pdf", plot = DensityPlotColony3, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 4
 # WORKERS
@@ -3034,7 +3090,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony4 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A14.pdf", plot = DensityPlotColony4, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A15.pdf", plot = DensityPlotColony4, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 5
 # WORKERS
@@ -3108,7 +3164,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony5 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A15.pdf", plot = DensityPlotColony5, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A16.pdf", plot = DensityPlotColony5, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 6
 # WORKERS
@@ -3183,7 +3239,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony6 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A16.pdf", plot = DensityPlotColony6, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A17.pdf", plot = DensityPlotColony6, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 7
 # WORKERS
@@ -3258,7 +3314,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony7 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A17.pdf", plot = DensityPlotColony7, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A18.pdf", plot = DensityPlotColony7, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 8
 # WORKERS
@@ -3333,7 +3389,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony8 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A18.pdf", plot = DensityPlotColony8, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A19.pdf", plot = DensityPlotColony8, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 9
 # WORKERS
@@ -3408,7 +3464,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony9 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A19.pdf", plot = DensityPlotColony9, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A20.pdf", plot = DensityPlotColony9, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 10
 # WORKERS
@@ -3483,7 +3539,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony10 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A20.pdf", plot = DensityPlotColony10, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A21.pdf", plot = DensityPlotColony10, width = 9.375, height = 6.77, units = "in")
 
 # LOW NEST DENSITY
 # COLONY 11
@@ -3596,7 +3652,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony11 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A21.pdf", plot = DensityPlotColony11, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A22.pdf", plot = DensityPlotColony11, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 12
 # WORKERS
@@ -3708,7 +3764,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony12 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A22.pdf", plot = DensityPlotColony12, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A23.pdf", plot = DensityPlotColony12, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 13
 # WORKERS
@@ -3820,7 +3876,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony13 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A23.pdf", plot = DensityPlotColony13, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A24.pdf", plot = DensityPlotColony13, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 14
 # WORKERS
@@ -3932,7 +3988,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony14 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A24.pdf", plot = DensityPlotColony14, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A25.pdf", plot = DensityPlotColony14, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 15
 # WORKERS
@@ -4044,7 +4100,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony15 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A25.pdf", plot = DensityPlotColony15, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A26.pdf", plot = DensityPlotColony15, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 16
 # WORKERS
@@ -4119,7 +4175,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony16 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A26.pdf", plot = DensityPlotColony16, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A27.pdf", plot = DensityPlotColony16, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 17
 # WORKERS
@@ -4194,7 +4250,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony17 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A27.pdf", plot = DensityPlotColony17, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A28.pdf", plot = DensityPlotColony17, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 18
 # WORKERS
@@ -4306,7 +4362,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony18 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A28.pdf", plot = DensityPlotColony18, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A29.pdf", plot = DensityPlotColony18, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 19
 # WORKERS
@@ -4418,7 +4474,7 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony19 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A29.pdf", plot = DensityPlotColony19, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A30.pdf", plot = DensityPlotColony19, width = 9.375, height = 6.77, units = "in")
 
 # COLONY 20
 # WORKERS
@@ -4493,4 +4549,4 @@ FullDensityPlot <- ggarrange(WorkerDensityColony, BroodQueenDensityColony,
 DensityPlotColony20 <- FullDensityPlot
 
 # Save plot as a PDF
-ggsave(file = "Fig_A30.pdf", plot = DensityPlotColony20, width = 9.375, height = 6.77, units = "in")
+ggsave(file = "Fig_A31.pdf", plot = DensityPlotColony20, width = 9.375, height = 6.77, units = "in")
